@@ -90,7 +90,7 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 从本地读取jpg文件</span></span><br><span class="line">File file = <span class="keyword">new</span> File(<span class="string">"supiaol.jpg"</span>);</span><br><span class="line">RandomAccessFile raf = <span class="keyword">new</span> RandomAccessFile(file,<span class="string">"rw"</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 定义一个buffer</span></span><br><span class="line"><span class="keyword">byte</span>[] buffer = <span class="keyword">new</span> <span class="keyword">byte</span>[(<span class="keyword">int</span>) file.length()];</span><br><span class="line">fileInputStream.read(buffer);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 输出 </span></span><br><span class="line">Socket socket = <span class="keyword">new</span> ServerSocket(<span class="number">8081</span>).accept();</span><br><span class="line">socket.getOutputStream().write(buffer);</span><br></pre></td></tr></table></figure>
 
 <p>​        上面代码到底是怎么将本地文件输出呢？底层实现经过了几次上下文切换，几次拷贝？整个过程是怎样的？详见下图:</p>
-<p><img src="/2020/06/04/%E6%88%91%E5%86%8D%E4%B9%9F%E4%B8%8D%E6%80%95%E9%9D%A2%E8%AF%95%E8%A2%AB%E9%97%AE%E9%9B%B6%E6%8B%B7%E8%B4%9D%E4%BA%86/%E6%88%91%E5%86%8D%E4%B9%9F%E4%B8%8D%E6%80%95%E9%9D%A2%E8%AF%95%E8%A2%AB%E9%97%AE%E9%9B%B6%E6%8B%B7%E8%B4%9D%E4%BA%86%5C4236553-174b8d9cc6119e67.webp" alt></p>
+<p><img src="/2020/06/04/%E6%88%91%E5%86%8D%E4%B9%9F%E4%B8%8D%E6%80%95%E9%9D%A2%E8%AF%95%E8%A2%AB%E9%97%AE%E9%9B%B6%E6%8B%B7%E8%B4%9D%E4%BA%86/4236553-174b8d9cc6119e67.webp" alt></p>
 <p>​        首先需要了解DMA(Direct Memory Access):<strong>直接内存存取</strong>，现代计算机重要特性，允许不同速度的硬件设备交互而不需要依赖CPU的中断，在I/O实现中即不需要将磁盘数据读取到主存中，DMA引擎直接将数据传输到内核缓存区，从而解放了CPU。</p>
 <ol>
 <li>我们本地的文件存储在磁盘上的，当需要用到的时候(调用read)用户态切换到内核态(第一次上下文切换)，同时开始第一次拷贝:DMA引擎将supiaol.jpg传输到内核缓冲区，等待下一步处理。</li>
@@ -101,17 +101,17 @@
 <p>​      以上过程共经历了四次上下文切换，四次数据拷贝，对于CPU来说，这样的过程还有很大优化空间，方法上可以从减少上下文切换和内存拷贝两方面入手，实现上可以通过某些硬件完全绕开主内存，于是出现了<strong>mmap</strong>和<strong>sendfile</strong>两种零拷贝方案。</p>
 <h3 id="mmap-write"><a href="#mmap-write" class="headerlink" title="mmap+write"></a>mmap+write</h3><p>​        mmap(一种内存映射文件的方法)：将一个文件或者对象内存。文件被映射到多个页上，如果文件的大小不等于所有页之和，那最后一个不被使用的页将被清零。mmap在用户空间映射到调用系统中作用很大。</p>
 <p>​        在mmap的支持下，将read()调用改为mmap调用将发生以下变化：</p>
-<p><img src="/2020/06/04/%E6%88%91%E5%86%8D%E4%B9%9F%E4%B8%8D%E6%80%95%E9%9D%A2%E8%AF%95%E8%A2%AB%E9%97%AE%E9%9B%B6%E6%8B%B7%E8%B4%9D%E4%BA%86/%E6%88%91%E5%86%8D%E4%B9%9F%E4%B8%8D%E6%80%95%E9%9D%A2%E8%AF%95%E8%A2%AB%E9%97%AE%E9%9B%B6%E6%8B%B7%E8%B4%9D%E4%BA%86%5C4236553-c5ea00b78e1b93fd.webp" alt></p>
+<p><img src="/2020/06/04/%E6%88%91%E5%86%8D%E4%B9%9F%E4%B8%8D%E6%80%95%E9%9D%A2%E8%AF%95%E8%A2%AB%E9%97%AE%E9%9B%B6%E6%8B%B7%E8%B4%9D%E4%BA%86/4236553-c5ea00b78e1b93fd.webp" alt></p>
 <p>​        图中可以看到，<strong>在将数据读取到内核缓冲区后并没有再将数据拷贝到用户缓冲区，而是通过mmap将内核缓冲区地址映射到Socket缓冲区中</strong>，这样不光减少一次内存拷贝，还避免了一次上下文切换，整个过程只剩下三次上下文切换和三次内存拷贝。但是mmap并不是完美的，文件在内存映射的过程中如果另外一个线程将同一个文件截断，再调用write()方法时总线将发生SIGBUS错误中断写入过程，因为执行了错误的文件访问，该信号默认行为是杀死进程并转储核心，在网络服务器中这并不是理想操作。针对SIGBUS处理有两种解决方法：</p>
 <ol>
 <li>针对SIGBUS信号安装信号处理程序,在处理程序中记录已写入字节数并安全返回，这种方式本质上没有避免SIGBUS错误信号的出现。</li>
 <li>内核进行文件租赁(Windows中的“机会锁定”)，通过在文件描述符上使用租赁，这样可以和内核一起使用特定文件，当另外一个线程访问文件时，内核会发送一个实时信号告诉当前线程内核可能正在破坏映射文件,在调用write()方法访问无效地址之前中断映射，返回已写入字节数。</li>
 </ol>
 <h3 id="sendfile"><a href="#sendfile" class="headerlink" title="sendfile"></a>sendfile</h3><p>​        内核在2.1版本引入sendfile系统调用对I/O继续优化。使用sendfile替换read系统调用后整个过程如下：</p>
-<p><img src="/2020/06/04/%E6%88%91%E5%86%8D%E4%B9%9F%E4%B8%8D%E6%80%95%E9%9D%A2%E8%AF%95%E8%A2%AB%E9%97%AE%E9%9B%B6%E6%8B%B7%E8%B4%9D%E4%BA%86/%E6%88%91%E5%86%8D%E4%B9%9F%E4%B8%8D%E6%80%95%E9%9D%A2%E8%AF%95%E8%A2%AB%E9%97%AE%E9%9B%B6%E6%8B%B7%E8%B4%9D%E4%BA%86%5C4236553-695904d24edc2fd5.webp" alt></p>
+<p><img src="/2020/06/04/%E6%88%91%E5%86%8D%E4%B9%9F%E4%B8%8D%E6%80%95%E9%9D%A2%E8%AF%95%E8%A2%AB%E9%97%AE%E9%9B%B6%E6%8B%B7%E8%B4%9D%E4%BA%86/4236553-695904d24edc2fd5.webp" alt></p>
 <p>​        <strong>可以明显看出sendfile减少了一次上下文切换，这是因为内核缓冲区与Socket缓冲区之间关联，然后发生第二次复制DMA引擎将数据从内核Socket缓冲区传递到协议引擎</strong>。sendfile是否面临和mmap同样的问题，另外一个进程阶段了调用传输的文件？这里sendfile已经做了相应的处理，如果我们不注册任何信号处理器，sendfile调用将简单返回其在中断之前传输的字节数。</p>
 <p>​        经过sendfile的再次优化，目前只剩下内核缓冲区中一份副本(两次拷贝)，那么还有没有办法连这一份副本也避免掉呢？在绝对硬件的支持下是可以做到的——如果网络接口能够支持收集操作。这意味需要传输的数据不需要在连续内存中，可以分散在各个存储位置。在内核2.4中对套接字缓冲区描述符进行了修改用于适应这些要求，这样不仅减少了多次上下文切换，还消除了处理器的重复数据。整个过程如下：</p>
-<p><img src="/2020/06/04/%E6%88%91%E5%86%8D%E4%B9%9F%E4%B8%8D%E6%80%95%E9%9D%A2%E8%AF%95%E8%A2%AB%E9%97%AE%E9%9B%B6%E6%8B%B7%E8%B4%9D%E4%BA%86/%E6%88%91%E5%86%8D%E4%B9%9F%E4%B8%8D%E6%80%95%E9%9D%A2%E8%AF%95%E8%A2%AB%E9%97%AE%E9%9B%B6%E6%8B%B7%E8%B4%9D%E4%BA%86%5C4236553-00c3e47936ecea25.webp" alt></p>
+<p><img src="/2020/06/04/%E6%88%91%E5%86%8D%E4%B9%9F%E4%B8%8D%E6%80%95%E9%9D%A2%E8%AF%95%E8%A2%AB%E9%97%AE%E9%9B%B6%E6%8B%B7%E8%B4%9D%E4%BA%86/4236553-00c3e47936ecea25.webp" alt></p>
 <ol>
 <li>sendfile系统调用使DMA引擎将文件内容复制到内核缓冲区中。</li>
 <li>避免了数据复制到套接字缓冲区中，而是将相关数据的行踪和长度信息的描述符附加到Socket缓冲区，DMA引擎将数据直接从内核缓冲区传递到协议引擎，实现副本的消除。</li>
