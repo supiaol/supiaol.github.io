@@ -1,138 +1,101 @@
 <!DOCTYPE html>
 <html>
-  <!-- Html Head Tag-->
-  <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="">
-  <meta name="author" content="supiaol">
+<head>
+  <meta charset="utf-8">
   
+
   
-  <!-- Open Graph Data -->
-  <meta property="og:title" content="Java线程实现与synchronized锁优化"/>
-  <meta property="og:description" content="" />
-  <meta property="og:site_name" content="不忘长安"/>
-  <meta property="og:type" content="article" />
-  <meta property="og:image" content="http://yoursite.com"/>
+  <title>Java线程实现与synchronized锁优化 | 不忘长安</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Java与线程线程的实现​        线程是比进程更轻量级的调度执行单位，线程的引入可以把一个进程的资源分配合执行调度分开，各个线程既可以共享进程资源，如内存地址、I&#x2F;O等，又可以独立调度。目前线程是Java进行处理器资源的最基本单位。Java语言提供了在不同硬件和操作系统下对线程操作的统一处理，每个已经调过start()方法并且还未结束的java.lang.Thread类的实列就代表一个线程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java线程实现与synchronized锁优化">
+<meta property="og:url" content="http://yoursite.com/2020/06/04/Java%E7%BA%BF%E7%A8%8B%E5%AE%9E%E7%8E%B0%E4%B8%8Esynchronized%E9%94%81%E4%BC%98%E5%8C%96/index.html">
+<meta property="og:site_name" content="不忘长安">
+<meta property="og:description" content="Java与线程线程的实现​        线程是比进程更轻量级的调度执行单位，线程的引入可以把一个进程的资源分配合执行调度分开，各个线程既可以共享进程资源，如内存地址、I&#x2F;O等，又可以独立调度。目前线程是Java进行处理器资源的最基本单位。Java语言提供了在不同硬件和操作系统下对线程操作的统一处理，每个已经调过start()方法并且还未结束的java.lang.Thread类的实列就代表一个线程">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://yoursite.com/2020/06/04/Java%E7%BA%BF%E7%A8%8B%E5%AE%9E%E7%8E%B0%E4%B8%8Esynchronized%E9%94%81%E4%BC%98%E5%8C%96/Users/wb-sqk632770/AppData/Roaming/Typora/typora-user-images/image-20200529114237565.png">
+<meta property="og:image" content="https://www.ibm.com/developerworks/java/library/j-jtp10264/figure1.jpg">
+<meta property="og:image" content="https://www.ibm.com/developerworks/java/library/j-jtp10264/figure2.jpg">
+<meta property="og:image" content="https://img-blog.csdn.net/20151217151455512?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center">
+<meta property="og:image" content="https://img-blog.csdn.net/20180908110545722?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2JhaWR1XzM4MDgzNjE5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70">
+<meta property="article:published_time" content="2020-06-04T04:54:59.000Z">
+<meta property="article:modified_time" content="2020-06-04T06:23:43.276Z">
+<meta property="article:author" content="supiaol">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/2020/06/04/Java%E7%BA%BF%E7%A8%8B%E5%AE%9E%E7%8E%B0%E4%B8%8Esynchronized%E9%94%81%E4%BC%98%E5%8C%96/Users/wb-sqk632770/AppData/Roaming/Typora/typora-user-images/image-20200529114237565.png">
   
     <link rel="alternate" href="/atom.xml" title="不忘长安" type="application/atom+xml">
   
   
-    <link rel="icon" href="/images/favicon.ico">
+    <link rel="icon" href="/favicon.png">
   
-
-  <!-- Site Title -->
-  <title>不忘长安</title>
-
-  <!-- Bootstrap CSS -->
   
-<link rel="stylesheet" href="/css/bootstrap.min.css">
-
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
   
-<link rel="stylesheet" href="/css/font-awesome.min.css">
-
-  <!-- Custom CSS -->
   
 <link rel="stylesheet" href="/css/style.css">
 
-
-  <!-- Google Analytics -->
-  
-
-  <!-- BaiDu Analytics -->
-  
-<script>var _hmt = _hmt || []</script>
-<script async src="//hm.baidu.com/hm.js?true"></script>
-
-
-
-
 <meta name="generator" content="Hexo 4.2.1"></head>
 
-  <body>
-    <!-- Page Header -->
-
-
-<nav class="navbar-custom navbar-fixed-top">
-    <div class="container-fluid">
-        <!-- Collect the nav links, forms, and other content for toggling -->
-        <div class="collapse navbar-collapse site-menu">
-            <ul class="nav navbar-nav navbar-right">
-                
-                    <li>
-                        <a href="/">
-                            
-                                Home
-                            
-                        </a>
-                    </li>
-                
-                    <li>
-                        <a href="/archives">
-                            
-                                Archives
-                            
-                        </a>
-                    </li>
-                
-                    <li>
-                        <a href="/%5Bobject%20Object%5D">
-                            
-                                <i class="icon fa fa-github fa-lg"></i>
-                            
-                        </a>
-                    </li>
-                
-            </ul>
-        </div>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">不忘长安</a>
+      </h1>
+      
     </div>
-</nav>
-
-<!-- Header -->
-<header class="site-header header-background intro-header" style="background-image: url(/img/banner.jpg)">
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-        <div class="page-title with-background-image">
-          <p class="title">Java线程实现与synchronized锁优化</p>
-          <p class="subtitle"></p>
-        </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
       </div>
     </div>
   </div>
 </header>
-
-<article>
-  <div class="container typo">
-    <div class="row">
-      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-        <div class="post-info text-muted">
-          
-            <!-- Author -->
-            <span class="author info">By supiaol</span>
-          
-          <!-- Date -->
-          <span class="date-time info">On
-            <!--<span class="date">2020-06-04T12:54:59+08:00</span> -->
-            <span class="date">2020-06-04</span>
-            <!--<span class="time">23:43:03</span> -->
-          </span>
-          
-        </div>
-        <!-- Tags -->
+      <div class="outer">
+        <section id="main"><article id="post-Java线程实现与synchronized锁优化" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/06/04/Java%E7%BA%BF%E7%A8%8B%E5%AE%9E%E7%8E%B0%E4%B8%8Esynchronized%E9%94%81%E4%BC%98%E5%8C%96/" class="article-date">
+  <time datetime="2020-06-04T04:54:59.000Z" itemprop="datePublished">2020-06-04</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
         
-          <div class="post-tags text-muted">
-            Tags: 
+  
+    <h1 class="article-title" itemprop="name">
+      Java线程实现与synchronized锁优化
+    </h1>
+  
 
-<a class="tag" href="/tags/Java/">#Java</a>
-
-
-          </div>
-        
-        <!-- Post Main Content -->
-        <div class="post-content">
-          <h3 id="Java与线程"><a href="#Java与线程" class="headerlink" title="Java与线程"></a>Java与线程</h3><h4 id="线程的实现"><a href="#线程的实现" class="headerlink" title="线程的实现"></a>线程的实现</h4><p>​        线程是比进程更轻量级的调度执行单位，线程的引入可以把一个进程的资源分配合执行调度分开，各个线程既可以共享进程资源，如内存地址、I/O等，又可以独立调度。目前线程是Java进行处理器资源的最基本单位。Java语言提供了在不同硬件和操作系统下对线程操作的统一处理，每个已经调过start()方法并且还未结束的java.lang.Thread类的实列就代表一个线程，Thread类与大部分Java类库的API有显著的差别，它的所有关键方法都被声明为Native,一个Native方法往往意味着这个方法没有使用或无法使用平台无关性手段实现。</p>
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="Java与线程"><a href="#Java与线程" class="headerlink" title="Java与线程"></a>Java与线程</h3><h4 id="线程的实现"><a href="#线程的实现" class="headerlink" title="线程的实现"></a>线程的实现</h4><p>​        线程是比进程更轻量级的调度执行单位，线程的引入可以把一个进程的资源分配合执行调度分开，各个线程既可以共享进程资源，如内存地址、I/O等，又可以独立调度。目前线程是Java进行处理器资源的最基本单位。Java语言提供了在不同硬件和操作系统下对线程操作的统一处理，每个已经调过start()方法并且还未结束的java.lang.Thread类的实列就代表一个线程，Thread类与大部分Java类库的API有显著的差别，它的所有关键方法都被声明为Native,一个Native方法往往意味着这个方法没有使用或无法使用平台无关性手段实现。</p>
 <p>​        线程主要有三种实现方式：1.使用内核线程实现(1:1实现)，2.使用用户线程实现(1:N实现)，3.使用用户线程和轻量级进程混合实现(N:M实现)。</p>
 <h5 id="1-内核线程实现"><a href="#1-内核线程实现" class="headerlink" title="1.内核线程实现"></a>1.内核线程实现</h5><p>​        内核线程就是直接由操作系统内核(Kernel)支持的线程，这种线程由内核来完成线程切换，内核通过操纵调度器对线程进行调度，负责将线程的任务映射到各个处理器上。每个内核线程可以视为内核的一个分身，这样操作系统就有能力同事处理多件事情，支持多线程的内核就称为多线程内核。</p>
 <p>​        程序一般不会直接使用内核线程，而是使用内核线程的一种高级接口，叫做轻量级进程，这也是我们通常意义上所讲的线程，每个轻量级进程都由一个内核线程支持，这种轻量级进程与内核线程之间1:1的关系称为一对一线程模型。</p>
@@ -255,74 +218,146 @@
 <p>​        偏向锁可以提高带有同步但无竞争的程序性能，但它同样是一个带有效益权衡性质的优化，也就是说它并非总是对程序运行有利。如果在多线程环境下， 那偏向模式就是多余的。关于偏向锁的启用及参数可以通过查看JVM参数配置，JVM启动之后并不会里面开启偏向锁，默认4秒之后开启，之所以这样做是因为JVM运行时是多线程模式，如果启动就开启偏向锁，不但多余对启动性能也有所影响，。</p>
 <h4 id="锁升级过程"><a href="#锁升级过程" class="headerlink" title="锁升级过程"></a>锁升级过程</h4><p><img src="https://img-blog.csdn.net/20180908110545722?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2JhaWR1XzM4MDgzNjE5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="img"></p>
 
-        </div>
-        <!-- Comments -->
-        
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-
-      </div>
+      
     </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2020/06/04/Java%E7%BA%BF%E7%A8%8B%E5%AE%9E%E7%8E%B0%E4%B8%8Esynchronized%E9%94%81%E4%BC%98%E5%8C%96/" data-id="ckb0b8jss0000wor608ap7f8w" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul>
+
+    </footer>
   </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/06/04/%E4%B8%80%E8%A1%8C%E4%B8%80%E8%A1%8C%E7%9C%8BAQS%E6%BA%90%E7%A0%81/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          一行一行看AQS源码
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2020/06/04/%E4%BD%A0%E5%88%B0%E5%BA%95%E4%BA%86%E4%B8%8D%E4%BA%86%E8%A7%A3volatile/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">你到底了不了解volatile?</div>
+    </a>
+  
+</nav>
+
+  
 </article>
 
-
-
+</section>
+        
+          <aside id="sidebar">
+  
     
-<!-- Footer -->
-<footer>
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-        <p class="copyright text-muted">
-        &copy; 2016 -  2020
-        <span class="with-love">
-            <i class="fa fa-heart"></i>
-        </span>
-        <span class="author">supiaol</span>
 
-        
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a></li></ul>
+    </div>
+  </div>
 
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Java/" style="font-size: 20px;">Java</a> <a href="/tags/Redis/" style="font-size: 10px;">Redis</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">June 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
         
-        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-        <p class="visit-statistics">
-            <span id="busuanzi_container_site_pv">
-              本站总访问：<span id="busuanzi_value_site_pv"></span>次
-              &nbsp;&nbsp;&nbsp;&nbsp;
-            </span>
-        <p>
+          <li>
+            <a href="/2020/06/04/%E4%BD%A0%E6%9D%A5%E5%95%A6/">你来啦</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/04/%E8%BF%99%E9%87%8C%E6%9C%89%E4%BD%A0%E5%B8%B8%E7%94%A8%E7%9A%84%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E5%90%97/">这里有你常用的分布式锁吗</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/04/%E6%88%91%E5%86%8D%E4%B9%9F%E4%B8%8D%E6%80%95%E9%9D%A2%E8%AF%95%E8%A2%AB%E9%97%AE%E9%9B%B6%E6%8B%B7%E8%B4%9D%E4%BA%86/">我再也不怕面试被问零拷贝了</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/04/Redis%E6%8C%81%E4%B9%85%E5%8C%96%E4%B9%9F%E5%B0%B1%E8%BF%99%E4%B9%88%E5%A4%9A%E9%9C%80%E8%A6%81%E6%8E%8C%E6%8F%A1%E7%9A%84/">Redis持久化也就这么多需要掌握的</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/04/%E4%B8%80%E8%A1%8C%E4%B8%80%E8%A1%8C%E7%9C%8BAQS%E6%BA%90%E7%A0%81/">一行一行看AQS源码</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
         
       </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 supiaol<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 
-    <!-- After Footer Scripts -->
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
 
-<script src="/js/highlight.pack.js"></script>
-
-<script>
-  document.addEventListener("DOMContentLoaded", function(event) {
-    var codeBlocks = Array.prototype.slice.call(document.getElementsByTagName('pre'))
-    codeBlocks.forEach(function(block, index) {
-      hljs.highlightBlock(block);
-    });
-  });
-</script>
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
 
 
 
-  </body>
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
 </html>
-
