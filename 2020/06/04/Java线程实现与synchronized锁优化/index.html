@@ -7,24 +7,24 @@
   
   <title>Java线程实现与synchronized锁优化 | 不忘长安</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="Java线程实现与synchronized锁优化​         Java与线程线程的实现​        线程是比进程更轻量级的调度执行单位，线程的引入可以把一个进程的资源分配合执行调度分开，各个线程既可以共享进程资源，如内存地址、I&#x2F;O等，又可以独立调度。目前线程是Java进行处理器资源的最基本单位。Java语言提供了在不同硬件和操作系统下对线程操作的统一处理，每个已经调过start()方法">
+  <meta name="description" content="Java与线程线程的实现​        线程是比进程更轻量级的调度执行单位，线程的引入可以把一个进程的资源分配合执行调度分开，各个线程既可以共享进程资源，如内存地址、I&#x2F;O等，又可以独立调度。目前线程是Java进行处理器资源的最基本单位。Java语言提供了在不同硬件和操作系统下对线程操作的统一处理，每个已经调过start()方法并且还未结束的java.lang.Thread类的实列就代表一个线程">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Java线程实现与synchronized锁优化">
 <meta property="og:url" content="http://yoursite.com/2020/06/04/Java%E7%BA%BF%E7%A8%8B%E5%AE%9E%E7%8E%B0%E4%B8%8Esynchronized%E9%94%81%E4%BC%98%E5%8C%96/index.html">
 <meta property="og:site_name" content="不忘长安">
-<meta property="og:description" content="Java线程实现与synchronized锁优化​         Java与线程线程的实现​        线程是比进程更轻量级的调度执行单位，线程的引入可以把一个进程的资源分配合执行调度分开，各个线程既可以共享进程资源，如内存地址、I&#x2F;O等，又可以独立调度。目前线程是Java进行处理器资源的最基本单位。Java语言提供了在不同硬件和操作系统下对线程操作的统一处理，每个已经调过start()方法">
+<meta property="og:description" content="Java与线程线程的实现​        线程是比进程更轻量级的调度执行单位，线程的引入可以把一个进程的资源分配合执行调度分开，各个线程既可以共享进程资源，如内存地址、I&#x2F;O等，又可以独立调度。目前线程是Java进行处理器资源的最基本单位。Java语言提供了在不同硬件和操作系统下对线程操作的统一处理，每个已经调过start()方法并且还未结束的java.lang.Thread类的实列就代表一个线程">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="c:/Users/wb-sqk632770/AppData/Roaming/Typora/typora-user-images/image-20200529114237565.png">
+<meta property="og:image" content="http://yoursite.com/2020/06/04/Java%E7%BA%BF%E7%A8%8B%E5%AE%9E%E7%8E%B0%E4%B8%8Esynchronized%E9%94%81%E4%BC%98%E5%8C%96/Users/wb-sqk632770/AppData/Roaming/Typora/typora-user-images/image-20200529114237565.png">
 <meta property="og:image" content="https://www.ibm.com/developerworks/java/library/j-jtp10264/figure1.jpg">
 <meta property="og:image" content="https://www.ibm.com/developerworks/java/library/j-jtp10264/figure2.jpg">
 <meta property="og:image" content="https://img-blog.csdn.net/20151217151455512?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center">
 <meta property="og:image" content="https://img-blog.csdn.net/20180908110545722?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2JhaWR1XzM4MDgzNjE5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70">
 <meta property="article:published_time" content="2020-06-04T04:54:59.000Z">
-<meta property="article:modified_time" content="2020-06-04T05:09:49.599Z">
+<meta property="article:modified_time" content="2020-06-04T06:23:43.276Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Java">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="c:/Users/wb-sqk632770/AppData/Roaming/Typora/typora-user-images/image-20200529114237565.png">
+<meta name="twitter:image" content="http://yoursite.com/2020/06/04/Java%E7%BA%BF%E7%A8%8B%E5%AE%9E%E7%8E%B0%E4%B8%8Esynchronized%E9%94%81%E4%BC%98%E5%8C%96/Users/wb-sqk632770/AppData/Roaming/Typora/typora-user-images/image-20200529114237565.png">
   
     <link rel="alternate" href="/atom.xml" title="不忘长安" type="application/atom+xml">
   
@@ -95,8 +95,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="Java线程实现与synchronized锁优化"><a href="#Java线程实现与synchronized锁优化" class="headerlink" title="Java线程实现与synchronized锁优化"></a>Java线程实现与synchronized锁优化</h1><p>​        </p>
-<h3 id="Java与线程"><a href="#Java与线程" class="headerlink" title="Java与线程"></a>Java与线程</h3><h4 id="线程的实现"><a href="#线程的实现" class="headerlink" title="线程的实现"></a>线程的实现</h4><p>​        线程是比进程更轻量级的调度执行单位，线程的引入可以把一个进程的资源分配合执行调度分开，各个线程既可以共享进程资源，如内存地址、I/O等，又可以独立调度。目前线程是Java进行处理器资源的最基本单位。Java语言提供了在不同硬件和操作系统下对线程操作的统一处理，每个已经调过start()方法并且还未结束的java.lang.Thread类的实列就代表一个线程，Thread类与大部分Java类库的API有显著的差别，它的所有关键方法都被声明为Native,一个Native方法往往意味着这个方法没有使用或无法使用平台无关性手段实现。</p>
+        <h3 id="Java与线程"><a href="#Java与线程" class="headerlink" title="Java与线程"></a>Java与线程</h3><h4 id="线程的实现"><a href="#线程的实现" class="headerlink" title="线程的实现"></a>线程的实现</h4><p>​        线程是比进程更轻量级的调度执行单位，线程的引入可以把一个进程的资源分配合执行调度分开，各个线程既可以共享进程资源，如内存地址、I/O等，又可以独立调度。目前线程是Java进行处理器资源的最基本单位。Java语言提供了在不同硬件和操作系统下对线程操作的统一处理，每个已经调过start()方法并且还未结束的java.lang.Thread类的实列就代表一个线程，Thread类与大部分Java类库的API有显著的差别，它的所有关键方法都被声明为Native,一个Native方法往往意味着这个方法没有使用或无法使用平台无关性手段实现。</p>
 <p>​        线程主要有三种实现方式：1.使用内核线程实现(1:1实现)，2.使用用户线程实现(1:N实现)，3.使用用户线程和轻量级进程混合实现(N:M实现)。</p>
 <h5 id="1-内核线程实现"><a href="#1-内核线程实现" class="headerlink" title="1.内核线程实现"></a>1.内核线程实现</h5><p>​        内核线程就是直接由操作系统内核(Kernel)支持的线程，这种线程由内核来完成线程切换，内核通过操纵调度器对线程进行调度，负责将线程的任务映射到各个处理器上。每个内核线程可以视为内核的一个分身，这样操作系统就有能力同事处理多件事情，支持多线程的内核就称为多线程内核。</p>
 <p>​        程序一般不会直接使用内核线程，而是使用内核线程的一种高级接口，叫做轻量级进程，这也是我们通常意义上所讲的线程，每个轻量级进程都由一个内核线程支持，这种轻量级进程与内核线程之间1:1的关系称为一对一线程模型。</p>
@@ -112,18 +111,18 @@
 <p>​        虽然说Java线程调度是系统自动完成的，但是我们仍然可以“建议”操作系统给某些线程多一点执行时间，另外的线程则可以少分配一点——这项操作可以通过设置线程优先级来完成。Java共设置了10个级别的优先级，在两个线程同时处于ready状态时，优先级越高的线程越容易被系统选择执行，但这并不是万无一失的，因为主流虚拟机上的Java线程是被映射到操作系统原生线程之上的，所以线程调度最终还是由操作系统说了算。尽管现代操作系统都提供了线程优先级概念，但不见得能与Java线程的优先级一一对应，如Solaris中线程有2147483648(2的31次幂)种优先级，但windows只有7种，如果操作系统比Java优先级更多，那还比较容易处理，中间留出空位就可以了，但是如果操作系统优先级比Java线程优先级少了，那一定会出现多个Java不同的优先级对应到操作系统同一个优先级的情况了，所以Java线程的优先级并不是高优先级绝对比低优先级先获取到cpu时间片。</p>
 <h3 id="Java线程状态转换"><a href="#Java线程状态转换" class="headerlink" title="Java线程状态转换"></a>Java线程状态转换</h3><p>​        Java定义了6种线程状态，在任意一个时间点中，一个线程只能有且只有其中一种状态。这6种状态分别是：</p>
 <ul>
-<li><input disabled="" type="checkbox"> <p>新建(New)：创建后尚未启动的线程处于这种状态</p>
+<li><input disabled type="checkbox"> <p>新建(New)：创建后尚未启动的线程处于这种状态</p>
 </li>
-<li><input disabled="" type="checkbox"> <p>运行(Runnable)：映射到操作系统线程状态中的Running和Ready，也就是处于此状态的线程有可能正在执行，也有可能正在等待操作系统为它分分配执行时间。</p>
+<li><input disabled type="checkbox"> <p>运行(Runnable)：映射到操作系统线程状态中的Running和Ready，也就是处于此状态的线程有可能正在执行，也有可能正在等待操作系统为它分分配执行时间。</p>
 </li>
-<li><input disabled="" type="checkbox"> <p>无限期等待(Waiting)：处于这种状态的线程不会被分配到处理器执行时间，它们要等待被其他线程显示唤醒。以下方法会让线程进入无限期等待状态：</p>
+<li><input disabled type="checkbox"> <p>无限期等待(Waiting)：处于这种状态的线程不会被分配到处理器执行时间，它们要等待被其他线程显示唤醒。以下方法会让线程进入无限期等待状态：</p>
 <ol>
 <li>没有设置Timeout参数的Object::wait()方法</li>
 <li>没有蛇者Timeout参数的Thread::join()方法</li>
 <li>LockSupport::park()方法</li>
 </ol>
 </li>
-<li><input disabled="" type="checkbox"> <p>限期等待(Timeout waiting)：处于这种状态的线程也不会被分配到处理器执行时间，不过无须等到其他线程的唤醒，在指定时间之后它们会被系统自动唤醒，以下方法会让线程进入限期等待：</p>
+<li><input disabled type="checkbox"> <p>限期等待(Timeout waiting)：处于这种状态的线程也不会被分配到处理器执行时间，不过无须等到其他线程的唤醒，在指定时间之后它们会被系统自动唤醒，以下方法会让线程进入限期等待：</p>
 <ol>
 <li>Thread::sleep()方法</li>
 <li>设置了Timeout参数的Object::wait()方法</li>
@@ -132,13 +131,13 @@
 <li>LockSupport::parkUntil()方法</li>
 </ol>
 </li>
-<li><input disabled="" type="checkbox"> <p>阻塞(Blocked)：线程被堵塞了，“堵塞状态”与“等待状态”的区别是“堵塞状态”在等待着获取到一个排他锁，这个时间将在另外一个线程释放锁的时候发生，而“等待状态”则是等待一段时间，或者唤醒动作的发生。在程序等待进入同步区域的时候，线程进入这种状态。</p>
+<li><input disabled type="checkbox"> <p>阻塞(Blocked)：线程被堵塞了，“堵塞状态”与“等待状态”的区别是“堵塞状态”在等待着获取到一个排他锁，这个时间将在另外一个线程释放锁的时候发生，而“等待状态”则是等待一段时间，或者唤醒动作的发生。在程序等待进入同步区域的时候，线程进入这种状态。</p>
 </li>
-<li><input disabled="" type="checkbox"> <p>结束(Terminated)：已终止的线程状态，代表线程已经执行结束。</p>
+<li><input disabled type="checkbox"> <p>结束(Terminated)：已终止的线程状态，代表线程已经执行结束。</p>
 <p>转换图如下：</p>
 </li>
 </ul>
-<img src="C:\Users\wb-sqk632770\AppData\Roaming\Typora\typora-user-images\image-20200529114237565.png" alt="image-20200529114237565" style="zoom:80%;" />
+<img src="/2020/06/04/Java%E7%BA%BF%E7%A8%8B%E5%AE%9E%E7%8E%B0%E4%B8%8Esynchronized%E9%94%81%E4%BC%98%E5%8C%96/Users\wb-sqk632770\AppData\Roaming\Typora\typora-user-images\image-20200529114237565.png" alt="image-20200529114237565" style="zoom:80%;">
 
 
 
@@ -146,18 +145,18 @@
 <h5 id="synchronized实现同步的原理"><a href="#synchronized实现同步的原理" class="headerlink" title="synchronized实现同步的原理"></a>synchronized实现同步的原理</h5><p>​        synchronized，Java关键字。互斥锁，可重入锁，隐式锁，重量级锁(早期是这样的)，一种块结构的同步语法。是JVM层面提供的一种解决线程安全的实现方法。synchronized经过Javac编译之后，会在同步代码块的前后分别形成<strong>monitorenter</strong>和<strong>monitorexit</strong>这两个字节码指令，这两个字节码指令都需要一个reference类型的参数来指明要锁定和解锁的对象，如果Java源码中的synchronized明确指定了对象参数，那就以这个对象的引用作为reference,如果没有明确指定，那就根据synchronized修饰的方法类型(实例方法或静态方法)，来决定是取代码所在的而对象实例还是取类型对应的Class对象作为线程要持有的锁。当synchronized修饰方法时，代码块的前后不需要使用monitorenter和monitorexit指令，而是在方法的符号引用添加<strong>ACC_SYNCHRONIZED</strong>标识。</p>
 <p>​        根据《Java虚拟机规范》的要求，在执行<strong>monitorenter</strong>指令时，首先要尝试获取对象的锁，如果对象此时没有被锁定，或者当前线程已经持有了那个对象的锁，就把锁的计数器的值加一，而在执行<strong>monitorexit</strong>指令时会将计数器的值减一，一旦计数器的值为零，锁随即被释放，如果获取锁对象失败，那当前线程就应当被阻塞等待，直到请求的锁定的对象被持有它的线程释放为止。据此我们可以得出关于synchronized的两条结论：</p>
 <ul>
-<li><input disabled="" type="checkbox"> 被synchronized修饰的代码块对同一条线程来说是可重入的，这意味着同一线程反复进入同步块也不会出现自己把自己锁死的情况。</li>
-<li><input disabled="" type="checkbox"> 被synchronized修饰的同步块在持有锁的线程执行完毕并释放锁之前，会无条件地阻塞后面其他线程的进入，这意味着无法像处理某些数据库中的锁那样，强制已获取锁的线程释放锁，也无法强制正在等待锁的线程中断等待或者超时退出。</li>
+<li><input disabled type="checkbox"> 被synchronized修饰的代码块对同一条线程来说是可重入的，这意味着同一线程反复进入同步块也不会出现自己把自己锁死的情况。</li>
+<li><input disabled type="checkbox"> 被synchronized修饰的同步块在持有锁的线程执行完毕并释放锁之前，会无条件地阻塞后面其他线程的进入，这意味着无法像处理某些数据库中的锁那样，强制已获取锁的线程释放锁，也无法强制正在等待锁的线程中断等待或者超时退出。</li>
 </ul>
 <p>​       synchronized是重量级锁体现在锁的获取和释放都需要经过内核态和用户态之间的转换，随着JDK版本的升级，Java虚拟机对这个“亲生儿子”也做了一系列优化，譬如在获取锁失败之后并不会立马进入阻塞状态，而是尝试通过自旋再次获取锁，避免“双态”之间频繁切换，关于synchronized的锁优化后续补充。</p>
 <h5 id="ReentrantLock实现同步"><a href="#ReentrantLock实现同步" class="headerlink" title="ReentrantLock实现同步"></a>ReentrantLock实现同步</h5><p>​        除了synchronized，自JDK1.5起，Java类库中提供了java.util.concurrent包(简称JUC),其中的java.util.concurrent.locks.lock接口编程了Java另一种全新的互斥同步手段。基于Lock接口，用户能够以非块结构来实现同步互斥，摆脱语言的束缚，在API层面实现同步。</p>
 <p>​        重入锁(ReentrantLock)是Lock接口最常见的一种实现，意为其名，它和synchronized一样都是可重入的，同为悲观锁，与其不同的是ReentrantLock的使用需要程序员关注锁的获取和释放，所以其又为显示锁。相比较synchronized,ReentrantLock增加了一些高级功能，主要包括以下三项：</p>
 <ul>
-<li><input disabled="" type="checkbox"> <p><strong>等待可中断</strong>：指持有锁的线程长期不释放锁的时候，正在等待的线程可以选择放弃等待，改为处理其他事情。可中断特性对处理执行时间非常长的同步块很有帮助。</p>
+<li><input disabled type="checkbox"> <p><strong>等待可中断</strong>：指持有锁的线程长期不释放锁的时候，正在等待的线程可以选择放弃等待，改为处理其他事情。可中断特性对处理执行时间非常长的同步块很有帮助。</p>
 </li>
-<li><input disabled="" type="checkbox"> <p><strong>公平锁：</strong>是指多个线程在等待同一个锁时，必须按照申请锁的时间顺序来依次获得锁；而非公平锁则不保证这一点，在锁被释放时，任何一个等待锁的线程都有机会获得锁，synchronized中的锁是非公平的，ReentrantLock默认也是非公平锁，通过构造方法传入布尔值可使用公平锁，不过一旦使用了公平锁会导致ReentrantLock性能急剧下降，明显影响吞吐量(内部通过维护队列实现)。</p>
+<li><input disabled type="checkbox"> <p><strong>公平锁：</strong>是指多个线程在等待同一个锁时，必须按照申请锁的时间顺序来依次获得锁；而非公平锁则不保证这一点，在锁被释放时，任何一个等待锁的线程都有机会获得锁，synchronized中的锁是非公平的，ReentrantLock默认也是非公平锁，通过构造方法传入布尔值可使用公平锁，不过一旦使用了公平锁会导致ReentrantLock性能急剧下降，明显影响吞吐量(内部通过维护队列实现)。</p>
 </li>
-<li><input disabled="" type="checkbox"> <p><strong>锁绑定多个条件：</strong>是指一个ReentrantLock对象可以同时绑定多个Condition对象，在synchronized中，锁对象的wait()跟它的notify()或者notifyAll()方法配合可以实现一个隐含的条件，如果要和多余一个的条件关联的时候，就不得不额外添加一个锁，而ReentrantLock无须这样做，只需要多次调用newCondition()方法即可。</p>
+<li><input disabled type="checkbox"> <p><strong>锁绑定多个条件：</strong>是指一个ReentrantLock对象可以同时绑定多个Condition对象，在synchronized中，锁对象的wait()跟它的notify()或者notifyAll()方法配合可以实现一个隐含的条件，如果要和多余一个的条件关联的时候，就不得不额外添加一个锁，而ReentrantLock无须这样做，只需要多次调用newCondition()方法即可。</p>
 </li>
 </ul>
 <p>  如果需要使用上述功能，ReentrantLock是一个很好的选择，如果是基于性能考虑呢？</p>
@@ -169,18 +168,18 @@
 <p>​        上图看出，多线程环境下synchronized的吞吐量下降地非常严重，也说明了synchronized还有非常大地优化余地，当然后续技术也证明了这点，当JDK1.6加入了大量针对synchronized锁地优化措施之后，相同的测试中就发现synchronized与ReentrantLock的性能基本上能够持平，着眼于当下，无论是企业开发还是学习使用我们的JDK版本应该都在1.6之上，所以性能已经不再是选择synchronized或者ReentrantLock的决定因素。</p>
 <p>​        基于以下理由，在synchronized和ReentrantLock都能满足需要时推荐优先使用synchronized：</p>
 <ul>
-<li><input disabled="" type="checkbox"> synchronized是Java语言层面的同步，足够清晰，也足够简单。每个程序员都熟悉synchronized，而J.U.C中的Lock接口并非如此。</li>
-<li><input disabled="" type="checkbox"> Lock要确保在finally块中释放锁，否则一旦同步块抛出异常，则有可能永远不会释放持有的锁，这一点必须有程序员保证，而使用synchronized我们不需要关心持有锁的获取和释放,JVM来确保即使出现异常，锁也能被自动释放。</li>
-<li><input disabled="" type="checkbox"> 长远角度来看，synchronized作为JVM的“亲儿子”更容易对其进行优化，因为Java虚拟机可以在线程和对象的元数据中记录synchronized中锁的相关信息，而在Lock中Java虚拟机很难得知哪些锁对象是由特定线程持有的。</li>
+<li><input disabled type="checkbox"> synchronized是Java语言层面的同步，足够清晰，也足够简单。每个程序员都熟悉synchronized，而J.U.C中的Lock接口并非如此。</li>
+<li><input disabled type="checkbox"> Lock要确保在finally块中释放锁，否则一旦同步块抛出异常，则有可能永远不会释放持有的锁，这一点必须有程序员保证，而使用synchronized我们不需要关心持有锁的获取和释放,JVM来确保即使出现异常，锁也能被自动释放。</li>
+<li><input disabled type="checkbox"> 长远角度来看，synchronized作为JVM的“亲儿子”更容易对其进行优化，因为Java虚拟机可以在线程和对象的元数据中记录synchronized中锁的相关信息，而在Lock中Java虚拟机很难得知哪些锁对象是由特定线程持有的。</li>
 </ul>
 <h4 id="非堵塞同步"><a href="#非堵塞同步" class="headerlink" title="非堵塞同步"></a>非堵塞同步</h4><p>​        互斥同步面临的主要问题就是进行线程阻塞和唤醒所带来的性能开销，因此互斥同步也被成为阻塞同步。从策略上来看，互斥同步属于悲观的并发策略，总是认为只要不去做正确的同步措施，那就肯定会出现线程安全问题。随着硬件指令集的发展，我们已经有了另外一种选择：<strong>基于冲突检测的乐观并发策略。</strong>通俗来讲，就是不管风险，先进行操作，颇有“先斩后奏”之意。如果没有其他线程争用共享数据，那操作就直接成功；如果共享数据被争用，产生了冲突，再进行补救措施，最常见的补救措施就是不断地重试，直到出现没有竞争共享数据为止。这种乐观并发策略不需要将线程阻塞挂起，因此被称为非堵塞同步。</p>
 <p>​        需要注意的是，乐观并发策略需要“硬件指令集的支持”，因为我们必须要求检测操作和冲突检测都是原子性操作。靠什么保证原子性？如果我们再使用互斥同步来促进保证就失去了讨论非堵塞同步的意义，所以只能靠硬件来实现这件事情。硬件来保证某些从语义上看起来像是需要多次操作的行为可以只通过一条处理器指令就能完成，这类指令常用的有：</p>
 <ul>
-<li><input disabled="" type="checkbox"> 测试并设置(Test-and-Set)</li>
-<li><input disabled="" type="checkbox"> 获取并增加(Fetch-and-Increment)</li>
-<li><input disabled="" type="checkbox"> 交换(Swap)</li>
-<li><input disabled="" type="checkbox"> <strong>比较并替换(Compare-and-Swap,又称CAS)</strong></li>
-<li><input disabled="" type="checkbox"> 记载链接/条件储存(Load-Linked/Store-Conditional,又称LL/SC)</li>
+<li><input disabled type="checkbox"> 测试并设置(Test-and-Set)</li>
+<li><input disabled type="checkbox"> 获取并增加(Fetch-and-Increment)</li>
+<li><input disabled type="checkbox"> 交换(Swap)</li>
+<li><input disabled type="checkbox"> <strong>比较并替换(Compare-and-Swap,又称CAS)</strong></li>
+<li><input disabled type="checkbox"> 记载链接/条件储存(Load-Linked/Store-Conditional,又称LL/SC)</li>
 </ul>
 <p>​      前三条是20世纪就已经存在于大多数指令集之中的处理器指令，后面的两条是现代处理器新增的，而且这两条指令的目的和功能也类似的。在x86、IA64指令集中有用<strong>cmpxchg</strong>(<strong>关键的指令，synchronized和CAS底层实现都是依靠 lock cmpxchg指令配合完成的</strong> )指令完成的CAS功能。</p>
 <h5 id="CAS"><a href="#CAS" class="headerlink" title="CAS"></a>CAS</h5><p>​        CAS指令需要有三个参数，分别是内存位置(可以理解为Java对象的内存地址，用V表示)、旧的预期值(用A表示)和准备设置的新值(用B表示)，CAS指令执行时，当且仅当V符合A时，处理器才会用B更新V的值，否则就不执行更新。但是，不管释放更新V的值，都会返回V的值，上述的处理过程是一个原子操作，执行期间不会被其他线程中断。</p>
@@ -207,7 +206,7 @@
 <h4 id="轻量级锁"><a href="#轻量级锁" class="headerlink" title="轻量级锁"></a>轻量级锁</h4><p>​        JDK6加入的新型锁机制，它的名字中的“轻量级”是相对于操作系统互斥量来实现的传统锁而言，因此传统的锁机制就被成为“重量级”锁。需要明确的是，轻量级锁并不是用来代替重量级锁的，它设计的初衷是在没有多线程竞争的前提下，减少传统重量级锁使用操作系统互斥量产生的性能损耗。</p>
 <p>​        要理解轻量级锁以及其后的偏向锁的原理和运作过程，必须对HotSpot虚拟机对象的内存布局(尤其是对象头)有所了解，HotSpot虚拟机的对象头(Object Header)分两部分，第一部分用于存储对象自身运行时数据，如哈希码(HashCode)、GC分代年龄等，这部分数据的长度在32位和64位的Java虚拟机中分别会占用32个或64个比特，官方成为“Mark Word”。这部分时实现轻量级锁和偏向锁的关键。另外一部分是用于存储指向方法区对象类型数据的指针，如果是数组对象，还会有一个额外的部分用于存储数组长度。</p>
 <p>​        由于对象头信息是与对象自身定义的数据无关的额外的存储成本，考虑到Java虚拟机的空间使用效率，Mark Word被设计成一个非固定的动态数据结构，以便在极小的空间内存存储尽量多的信息。例如在32位的HotSpot虚拟机中，对象未被锁定的状态下，Mark Word的32个比特空间里的25个比特将用于存储对象哈希码，4个比特用于存储对象分代年龄，2个比特用于存储锁标志位，还有1个比特固定为0(表示未进入偏向模式)。对象除了未被锁定的正常状态外，还有轻量级锁定，重量级锁定、GC标志、可偏向等多种状态，这些状态下的对象头存储内容如下表</p>
-<img src="https://img-blog.csdn.net/20151217151455512?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center" alt="img" style="zoom:67%;" />
+<img src="https://img-blog.csdn.net/20151217151455512?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center" alt="img" style="zoom:67%;">
 
 <p>​        轻量级锁的工作过程：<strong>在代码即将进入同步块的时候，如果此对象没有被锁定(锁标志为“01”状态)，虚拟机首先将在当前线程的栈帧种建立一个名为锁记录(Lock Record)的空间，用于存储锁对象目前的Mark Word的拷贝，然后，虚拟机将使用CAS操作尝试把对象的Mark word更新为指向Lock Record的指针，如果成功了，就代表当前线程拥有了这个对象的锁，并且对象Mark Word的锁标志位将转变为“00”，表示此对象处于轻量级锁定状态</strong>。</p>
 <p>​        如果CAS更新操作失败，那意味着至少存在一条线程与当前线程获取竞争该对象的锁。虚拟机首先会检查对象的Mark Word是否指向当前线程的栈帧，如果是，说明当前线程已经持有这个对象的锁，那么直接进入同步块继续执行就可以了，否则说明这个对象锁已经被其他线程抢占了。如果出现两条以上的线程抢占锁，那轻量级锁就不再生效了，立即膨胀为重量级锁，锁的标志为变为“10”，此时Mark Word中存储的就是指向重量级锁的指针，后面等待锁的线程必须进入阻塞状态。</p>
