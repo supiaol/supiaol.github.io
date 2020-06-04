@@ -5,14 +5,19 @@
   
 
   
-  <title>不忘长安</title>
+  <title>一行一行看AQS源码 | 不忘长安</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="不忘长安">
-<meta property="og:url" content="http://yoursite.com/index.html">
+  <meta name="description" content="AbstractQueuedSynchronizer简介​        它提供了一个FIFO队列，可以看成是一个用来实现同步锁以及其他涉及到同步功能的核心组件，常见的有:ReentrantLock、CountDownLatch等。​        AQS是一个抽象类，主要是通过继承的方式来使用，它本身没有实现任何的同步接口，仅仅是定义了同步状态的获取以及释放的方法来提供自定义的同步组件。 ​">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一行一行看AQS源码">
+<meta property="og:url" content="http://yoursite.com/2020/06/04/%E4%B8%80%E8%A1%8C%E4%B8%80%E8%A1%8C%E7%9C%8BAQS%E6%BA%90%E7%A0%81/index.html">
 <meta property="og:site_name" content="不忘长安">
+<meta property="og:description" content="AbstractQueuedSynchronizer简介​        它提供了一个FIFO队列，可以看成是一个用来实现同步锁以及其他涉及到同步功能的核心组件，常见的有:ReentrantLock、CountDownLatch等。​        AQS是一个抽象类，主要是通过继承的方式来使用，它本身没有实现任何的同步接口，仅仅是定义了同步状态的获取以及释放的方法来提供自定义的同步组件。 ​">
 <meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-06-04T05:06:36.000Z">
+<meta property="article:modified_time" content="2020-06-04T05:08:12.454Z">
 <meta property="article:author" content="John Doe">
+<meta property="article:tag" content="Java">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternate" href="/atom.xml" title="不忘长安" type="application/atom+xml">
@@ -62,9 +67,7 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-    <article id="post-一行一行看AQS源码" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-一行一行看AQS源码" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2020/06/04/%E4%B8%80%E8%A1%8C%E4%B8%80%E8%A1%8C%E7%9C%8BAQS%E6%BA%90%E7%A0%81/" class="article-date">
   <time datetime="2020-06-04T05:06:36.000Z" itemprop="datePublished">2020-06-04</time>
@@ -77,8 +80,8 @@
       <header class="article-header">
         
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/06/04/%E4%B8%80%E8%A1%8C%E4%B8%80%E8%A1%8C%E7%9C%8BAQS%E6%BA%90%E7%A0%81/">一行一行看AQS源码</a>
+    <h1 class="article-title" itemprop="name">
+      一行一行看AQS源码
     </h1>
   
 
@@ -169,265 +172,19 @@
     </footer>
   </div>
   
-</article>
-
-
+    
+<nav id="article-nav">
   
-    <article id="post-Java线程实现与synchronized锁优化" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2020/06/04/Java%E7%BA%BF%E7%A8%8B%E5%AE%9E%E7%8E%B0%E4%B8%8Esynchronized%E9%94%81%E4%BC%98%E5%8C%96/" class="article-date">
-  <time datetime="2020-06-04T04:54:59.000Z" itemprop="datePublished">2020-06-04</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/06/04/Java%E7%BA%BF%E7%A8%8B%E5%AE%9E%E7%8E%B0%E4%B8%8Esynchronized%E9%94%81%E4%BC%98%E5%8C%96/">Java线程实现与synchronized锁优化</a>
-    </h1>
+    <a href="/2020/06/04/Java%E7%BA%BF%E7%A8%8B%E5%AE%9E%E7%8E%B0%E4%B8%8Esynchronized%E9%94%81%E4%BC%98%E5%8C%96/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Java线程实现与synchronized锁优化</div>
+    </a>
   
+</nav>
 
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="Java线程与synchronized"><a href="#Java线程与synchronized" class="headerlink" title="Java线程与synchronized"></a>Java线程与synchronized</h1><p>​        </p>
-<h3 id="Java与线程"><a href="#Java与线程" class="headerlink" title="Java与线程"></a>Java与线程</h3><h4 id="线程的实现"><a href="#线程的实现" class="headerlink" title="线程的实现"></a>线程的实现</h4><p>​        线程是比进程更轻量级的调度执行单位，线程的引入可以把一个进程的资源分配合执行调度分开，各个线程既可以共享进程资源，如内存地址、I/O等，又可以独立调度。目前线程是Java进行处理器资源的最基本单位。Java语言提供了在不同硬件和操作系统下对线程操作的统一处理，每个已经调过start()方法并且还未结束的java.lang.Thread类的实列就代表一个线程，Thread类与大部分Java类库的API有显著的差别，它的所有关键方法都被声明为Native,一个Native方法往往意味着这个方法没有使用或无法使用平台无关性手段实现。</p>
-<p>​        线程主要有三种实现方式：1.使用内核线程实现(1:1实现)，2.使用用户线程实现(1:N实现)，3.使用用户线程和轻量级进程混合实现(N:M实现)。</p>
-<h5 id="1-内核线程实现"><a href="#1-内核线程实现" class="headerlink" title="1.内核线程实现"></a>1.内核线程实现</h5><p>​        内核线程就是直接由操作系统内核(Kernel)支持的线程，这种线程由内核来完成线程切换，内核通过操纵调度器对线程进行调度，负责将线程的任务映射到各个处理器上。每个内核线程可以视为内核的一个分身，这样操作系统就有能力同事处理多件事情，支持多线程的内核就称为多线程内核。</p>
-<p>​        程序一般不会直接使用内核线程，而是使用内核线程的一种高级接口，叫做轻量级进程，这也是我们通常意义上所讲的线程，每个轻量级进程都由一个内核线程支持，这种轻量级进程与内核线程之间1:1的关系称为一对一线程模型。</p>
-<p>​        优势：每个轻量级进程都成为一个独立的调度单元，即使其中一个轻量级进程在系统调度中被堵塞也不会影响整个进程继续工作。局限性：由于是基于内核线程实现的，所有各种线程操作，比如创建、析构和同步，都需要进行系统调用(system call),而系统调用的代价相对较高，需要在内核态和用户态之间来回切换(每次切换内核都需要保存上下文资源，恢复下个线程上次执行所在现场)。每个轻量级进程需要内核线程的支持，因此轻量级进程需要消耗内核资源，所以一个系统支持的轻量级进程是有限的。</p>
-<h5 id="2-用户线程实现"><a href="#2-用户线程实现" class="headerlink" title="2.用户线程实现"></a>2.用户线程实现</h5><p>​        使用用户线程实现的方式被称为1:N实现。广义上来讲，只要不是内核线程，其余都是用户线程，所以轻量级进程也可以被称为用户线程，但是轻量级进程的实现始终是建立在内核之上的，许多操作都要进行系统调用，因此效率会受限制，不具备通常意义上用户线程的优点。</p>
-<p>​        用户线程指的是完全建立在用户空间的线程库上，系统内核不用感知到用户线程的存在及如何实现。用户线程的建立、同步、销毁和调度完全在用户态中完成，不要内核的帮助。如果实现得到，这种线程不需要内核态和用户态之间切换，因此操作可以是非常快且低消耗的，也能支持更大规模的线程数量，部分高性能数据中的多线程就是用户线程实现，这种进程与用户线程之间1:N的关系称为一对多线程模型。</p>
-<p>​        优势:不需要内核支援。劣势：没有内核支持，所有的线程操作都需要用户程序实现。线程的创建、销毁、切换和调度都是用户必须考虑的问题，而且由于操作系统只把处理器资源分配到进程，诸如“堵测如何处理”，“多处理器系统中如何将线程映射到其他处理器上”这类问题解决起立将会异常困难甚至无法实现，一般的应用程序都不倾向于使用用户线程。</p>
-<h5 id="3-混合实现"><a href="#3-混合实现" class="headerlink" title="3.混合实现"></a>3.混合实现</h5><p>​        除了依赖内核线程实现和完全由用户程序自己实现之外，还有一种将内核线程与用户线程一起使用的实现方式叫做混合实现，也被成为N:M实现。在这种混合实现下，既存在用户线程又存在轻量级进程。用户线程还是建立在用户空间之上，线程的创建、切换、析构等操作依然廉价，但是由于轻量级进程的存在使得内核提供的线程调度功能及处理器映射变得简单许多，在这种混合模式下，用户线程和内核线程的数量比是不定的，是N:M的关系，这种就是多对多模型。</p>
-<h4 id="Java线程的实现"><a href="#Java线程的实现" class="headerlink" title="Java线程的实现"></a>Java线程的实现</h4><p>​        首先需要明确的是，Java线程的实现并不受Java虚拟机的约束，这是与具体虚拟机无关的话题。Java线程早期(JDK1.2以前)是基于一种“绿色线程”的用户线程实现的，从JDK1.3起，主流商用Java虚拟机的线程模型普遍被替换成基于操作系统原生线程模型来实现，即采用了1:1模型。以HotSpot为例，它的每一个线程都是直接映射到一个操作系统的原生线程来实现的，而且中间没有额外的间接结构，所以HotSpot不会去干涉线程调度，线程所有的一切行为底层都是由操作系统全权决定。</p>
-<h3 id="Java线程调度"><a href="#Java线程调度" class="headerlink" title="Java线程调度"></a>Java线程调度</h3><p>​        调度是指系统为线程分配处理器使用权的过程，调度主要分为两种，分别是协同式和抢占式。</p>
-<p>​        协同式：线程的执行时间由线程本身来控制，线程把自己的工作执行完之后，要主动通知系统切换到另外一个线程上去。协同式最大的好处就是实现简单，而且由于线程要把自己的事情干完后才会进行线程切换，切换操作对线程是可知的，所以一般不会存在线程同步问题。这种方式的坏处也明显：线程执行时间不可控，如果线程代码编写有问题，一直不告知系统进行线程切换，那么程序会一直堵塞在那里。</p>
-<p>​        抢占式：每个线程将由操作系统来分配执行时间，线程的切换不由线程本身来决定。如Thread.yield()方法可以让线程主动让出执行时间，但是如果线程想要主动获取执行时间，线程本身是没有什么办法的。这种调度的实现下，执行时间是可控的。<strong>Java使用的调度方式就是抢占式调度</strong>。</p>
-<p>​        虽然说Java线程调度是系统自动完成的，但是我们仍然可以“建议”操作系统给某些线程多一点执行时间，另外的线程则可以少分配一点——这项操作可以通过设置线程优先级来完成。Java共设置了10个级别的优先级，在两个线程同时处于ready状态时，优先级越高的线程越容易被系统选择执行，但这并不是万无一失的，因为主流虚拟机上的Java线程是被映射到操作系统原生线程之上的，所以线程调度最终还是由操作系统说了算。尽管现代操作系统都提供了线程优先级概念，但不见得能与Java线程的优先级一一对应，如Solaris中线程有2147483648(2的31次幂)种优先级，但windows只有7种，如果操作系统比Java优先级更多，那还比较容易处理，中间留出空位就可以了，但是如果操作系统优先级比Java线程优先级少了，那一定会出现多个Java不同的优先级对应到操作系统同一个优先级的情况了，所以Java线程的优先级并不是高优先级绝对比低优先级先获取到cpu时间片。</p>
-<h3 id="Java线程状态转换"><a href="#Java线程状态转换" class="headerlink" title="Java线程状态转换"></a>Java线程状态转换</h3><p>​        Java定义了6种线程状态，在任意一个时间点中，一个线程只能有且只有其中一种状态。这6种状态分别是：</p>
-<ul>
-<li><input disabled="" type="checkbox"> <p>新建(New)：创建后尚未启动的线程处于这种状态</p>
-</li>
-<li><input disabled="" type="checkbox"> <p>运行(Runnable)：映射到操作系统线程状态中的Running和Ready，也就是处于此状态的线程有可能正在执行，也有可能正在等待操作系统为它分分配执行时间。</p>
-</li>
-<li><input disabled="" type="checkbox"> <p>无限期等待(Waiting)：处于这种状态的线程不会被分配到处理器执行时间，它们要等待被其他线程显示唤醒。以下方法会让线程进入无限期等待状态：</p>
-<ol>
-<li>没有设置Timeout参数的Object::wait()方法</li>
-<li>没有蛇者Timeout参数的Thread::join()方法</li>
-<li>LockSupport::park()方法</li>
-</ol>
-</li>
-<li><input disabled="" type="checkbox"> <p>限期等待(Timeout waiting)：处于这种状态的线程也不会被分配到处理器执行时间，不过无须等到其他线程的唤醒，在指定时间之后它们会被系统自动唤醒，以下方法会让线程进入限期等待：</p>
-<ol>
-<li>Thread::sleep()方法</li>
-<li>设置了Timeout参数的Object::wait()方法</li>
-<li>设置了Timeout参数的Thread::join()方法</li>
-<li>LockSupport::parkNanos()方法</li>
-<li>LockSupport::parkUntil()方法</li>
-</ol>
-</li>
-<li><input disabled="" type="checkbox"> <p>阻塞(Blocked)：线程被堵塞了，“堵塞状态”与“等待状态”的区别是“堵塞状态”在等待着获取到一个排他锁，这个时间将在另外一个线程释放锁的时候发生，而“等待状态”则是等待一段时间，或者唤醒动作的发生。在程序等待进入同步区域的时候，线程进入这种状态。</p>
-</li>
-<li><input disabled="" type="checkbox"> <p>结束(Terminated)：已终止的线程状态，代表线程已经执行结束。</p>
-<p>转换图如下：</p>
-</li>
-</ul>
-<img src="C:\Users\wb-sqk632770\AppData\Roaming\Typora\typora-user-images\image-20200529114237565.png" alt="image-20200529114237565" style="zoom:80%;" />
-
-
-
-<h3 id="Java线程安全的实现方法"><a href="#Java线程安全的实现方法" class="headerlink" title="Java线程安全的实现方法"></a>Java线程安全的实现方法</h3><h4 id="互斥同步"><a href="#互斥同步" class="headerlink" title="互斥同步"></a>互斥同步</h4><p>​        互斥同步是一种最常见的也是最主要的并发正确性保障手段。同步是指多个线程并发访问共享数据时，保证共享数据在同一个时刻只能被一条线程使用(或者是一些，当使用信号量的时候)。而互斥是实现同步的一种手段，临界区、互斥量和信号量都是常见的互斥实现方式。在Java里最基本的互斥手段就是synchronized关键字。</p>
-<h5 id="synchronized实现同步的原理"><a href="#synchronized实现同步的原理" class="headerlink" title="synchronized实现同步的原理"></a>synchronized实现同步的原理</h5><p>​        synchronized，Java关键字。互斥锁，可重入锁，隐式锁，重量级锁(早期是这样的)，一种块结构的同步语法。是JVM层面提供的一种解决线程安全的实现方法。synchronized经过Javac编译之后，会在同步代码块的前后分别形成<strong>monitorenter</strong>和<strong>monitorexit</strong>这两个字节码指令，这两个字节码指令都需要一个reference类型的参数来指明要锁定和解锁的对象，如果Java源码中的synchronized明确指定了对象参数，那就以这个对象的引用作为reference,如果没有明确指定，那就根据synchronized修饰的方法类型(实例方法或静态方法)，来决定是取代码所在的而对象实例还是取类型对应的Class对象作为线程要持有的锁。当synchronized修饰方法时，代码块的前后不需要使用monitorenter和monitorexit指令，而是在方法的符号引用添加<strong>ACC_SYNCHRONIZED</strong>标识。</p>
-<p>​        根据《Java虚拟机规范》的要求，在执行<strong>monitorenter</strong>指令时，首先要尝试获取对象的锁，如果对象此时没有被锁定，或者当前线程已经持有了那个对象的锁，就把锁的计数器的值加一，而在执行<strong>monitorexit</strong>指令时会将计数器的值减一，一旦计数器的值为零，锁随即被释放，如果获取锁对象失败，那当前线程就应当被阻塞等待，直到请求的锁定的对象被持有它的线程释放为止。据此我们可以得出关于synchronized的两条结论：</p>
-<ul>
-<li><input disabled="" type="checkbox"> 被synchronized修饰的代码块对同一条线程来说是可重入的，这意味着同一线程反复进入同步块也不会出现自己把自己锁死的情况。</li>
-<li><input disabled="" type="checkbox"> 被synchronized修饰的同步块在持有锁的线程执行完毕并释放锁之前，会无条件地阻塞后面其他线程的进入，这意味着无法像处理某些数据库中的锁那样，强制已获取锁的线程释放锁，也无法强制正在等待锁的线程中断等待或者超时退出。</li>
-</ul>
-<p>​       synchronized是重量级锁体现在锁的获取和释放都需要经过内核态和用户态之间的转换，随着JDK版本的升级，Java虚拟机对这个“亲生儿子”也做了一系列优化，譬如在获取锁失败之后并不会立马进入阻塞状态，而是尝试通过自旋再次获取锁，避免“双态”之间频繁切换，关于synchronized的锁优化后续补充。</p>
-<h5 id="ReentrantLock实现同步"><a href="#ReentrantLock实现同步" class="headerlink" title="ReentrantLock实现同步"></a>ReentrantLock实现同步</h5><p>​        除了synchronized，自JDK1.5起，Java类库中提供了java.util.concurrent包(简称JUC),其中的java.util.concurrent.locks.lock接口编程了Java另一种全新的互斥同步手段。基于Lock接口，用户能够以非块结构来实现同步互斥，摆脱语言的束缚，在API层面实现同步。</p>
-<p>​        重入锁(ReentrantLock)是Lock接口最常见的一种实现，意为其名，它和synchronized一样都是可重入的，同为悲观锁，与其不同的是ReentrantLock的使用需要程序员关注锁的获取和释放，所以其又为显示锁。相比较synchronized,ReentrantLock增加了一些高级功能，主要包括以下三项：</p>
-<ul>
-<li><input disabled="" type="checkbox"> <p><strong>等待可中断</strong>：指持有锁的线程长期不释放锁的时候，正在等待的线程可以选择放弃等待，改为处理其他事情。可中断特性对处理执行时间非常长的同步块很有帮助。</p>
-</li>
-<li><input disabled="" type="checkbox"> <p><strong>公平锁：</strong>是指多个线程在等待同一个锁时，必须按照申请锁的时间顺序来依次获得锁；而非公平锁则不保证这一点，在锁被释放时，任何一个等待锁的线程都有机会获得锁，synchronized中的锁是非公平的，ReentrantLock默认也是非公平锁，通过构造方法传入布尔值可使用公平锁，不过一旦使用了公平锁会导致ReentrantLock性能急剧下降，明显影响吞吐量(内部通过维护队列实现)。</p>
-</li>
-<li><input disabled="" type="checkbox"> <p><strong>锁绑定多个条件：</strong>是指一个ReentrantLock对象可以同时绑定多个Condition对象，在synchronized中，锁对象的wait()跟它的notify()或者notifyAll()方法配合可以实现一个隐含的条件，如果要和多余一个的条件关联的时候，就不得不额外添加一个锁，而ReentrantLock无须这样做，只需要多次调用newCondition()方法即可。</p>
-</li>
-</ul>
-<p>  如果需要使用上述功能，ReentrantLock是一个很好的选择，如果是基于性能考虑呢？</p>
-<h5 id="synchronized与ReentrantLock性能比较"><a href="#synchronized与ReentrantLock性能比较" class="headerlink" title="synchronized与ReentrantLock性能比较"></a>synchronized与ReentrantLock性能比较</h5><p>​        在JDK1.5之前synchronized对性能的影响还是很明显的，为此在JDK1.6中还专门针对性的优化，以synchronized和ReentrantLock的性能对比为例，Brian Goets对这两种锁在JDK5环境下做了一组吞吐量对比的实验，实验结果如下图</p>
-<p><img src="https://www.ibm.com/developerworks/java/library/j-jtp10264/figure1.jpg" alt="Figure 1. Throughput for synchronization and Lock, single CPU"></p>
-<p>​                                                                               JDK5、单核处理器下两种锁的吞吐量对比</p>
-<p><img src="https://www.ibm.com/developerworks/java/library/j-jtp10264/figure2.jpg" alt="Figure 2. Throughput (normalized) for synchronization and Lock, four CPUs"></p>
-<p>​                                                                              JDK1.5、双核处理器下两种锁的吞吐量对比</p>
-<p>​        上图看出，多线程环境下synchronized的吞吐量下降地非常严重，也说明了synchronized还有非常大地优化余地，当然后续技术也证明了这点，当JDK1.6加入了大量针对synchronized锁地优化措施之后，相同的测试中就发现synchronized与ReentrantLock的性能基本上能够持平，着眼于当下，无论是企业开发还是学习使用我们的JDK版本应该都在1.6之上，所以性能已经不再是选择synchronized或者ReentrantLock的决定因素。</p>
-<p>​        基于以下理由，在synchronized和ReentrantLock都能满足需要时推荐优先使用synchronized：</p>
-<ul>
-<li><input disabled="" type="checkbox"> synchronized是Java语言层面的同步，足够清晰，也足够简单。每个程序员都熟悉synchronized，而J.U.C中的Lock接口并非如此。</li>
-<li><input disabled="" type="checkbox"> Lock要确保在finally块中释放锁，否则一旦同步块抛出异常，则有可能永远不会释放持有的锁，这一点必须有程序员保证，而使用synchronized我们不需要关心持有锁的获取和释放,JVM来确保即使出现异常，锁也能被自动释放。</li>
-<li><input disabled="" type="checkbox"> 长远角度来看，synchronized作为JVM的“亲儿子”更容易对其进行优化，因为Java虚拟机可以在线程和对象的元数据中记录synchronized中锁的相关信息，而在Lock中Java虚拟机很难得知哪些锁对象是由特定线程持有的。</li>
-</ul>
-<h4 id="非堵塞同步"><a href="#非堵塞同步" class="headerlink" title="非堵塞同步"></a>非堵塞同步</h4><p>​        互斥同步面临的主要问题就是进行线程阻塞和唤醒所带来的性能开销，因此互斥同步也被成为阻塞同步。从策略上来看，互斥同步属于悲观的并发策略，总是认为只要不去做正确的同步措施，那就肯定会出现线程安全问题。随着硬件指令集的发展，我们已经有了另外一种选择：<strong>基于冲突检测的乐观并发策略。</strong>通俗来讲，就是不管风险，先进行操作，颇有“先斩后奏”之意。如果没有其他线程争用共享数据，那操作就直接成功；如果共享数据被争用，产生了冲突，再进行补救措施，最常见的补救措施就是不断地重试，直到出现没有竞争共享数据为止。这种乐观并发策略不需要将线程阻塞挂起，因此被称为非堵塞同步。</p>
-<p>​        需要注意的是，乐观并发策略需要“硬件指令集的支持”，因为我们必须要求检测操作和冲突检测都是原子性操作。靠什么保证原子性？如果我们再使用互斥同步来促进保证就失去了讨论非堵塞同步的意义，所以只能靠硬件来实现这件事情。硬件来保证某些从语义上看起来像是需要多次操作的行为可以只通过一条处理器指令就能完成，这类指令常用的有：</p>
-<ul>
-<li><input disabled="" type="checkbox"> 测试并设置(Test-and-Set)</li>
-<li><input disabled="" type="checkbox"> 获取并增加(Fetch-and-Increment)</li>
-<li><input disabled="" type="checkbox"> 交换(Swap)</li>
-<li><input disabled="" type="checkbox"> <strong>比较并替换(Compare-and-Swap,又称CAS)</strong></li>
-<li><input disabled="" type="checkbox"> 记载链接/条件储存(Load-Linked/Store-Conditional,又称LL/SC)</li>
-</ul>
-<p>​      前三条是20世纪就已经存在于大多数指令集之中的处理器指令，后面的两条是现代处理器新增的，而且这两条指令的目的和功能也类似的。在x86、IA64指令集中有用<strong>cmpxchg</strong>(<strong>关键的指令，synchronized和CAS底层实现都是依靠 lock cmpxchg指令配合完成的</strong> )指令完成的CAS功能。</p>
-<h5 id="CAS"><a href="#CAS" class="headerlink" title="CAS"></a>CAS</h5><p>​        CAS指令需要有三个参数，分别是内存位置(可以理解为Java对象的内存地址，用V表示)、旧的预期值(用A表示)和准备设置的新值(用B表示)，CAS指令执行时，当且仅当V符合A时，处理器才会用B更新V的值，否则就不执行更新。但是，不管释放更新V的值，都会返回V的值，上述的处理过程是一个原子操作，执行期间不会被其他线程中断。</p>
-<p>​        在JDK1.5之后，Java类库中才开始使用CAS操作，该操作由sun.misc.Unsafe类里面的compareAndSwapInt()和compareAndSwapLong()等接方法包装提供，HotSpot虚拟机在内部对这些方法做了特殊处理，即时编译出来的结果就是一条平台相关的处理器CAS指令，没有方法调用的过程，或者可以让认为是无条件内联过去了。Unsafe在设计上就不是提供给用户程序使用的(Unsafe::getUnsafe()的代码中限制了只有启动类加载器(Bootstrap ClassLoader)加载的class才能访问它)，因此在JDK9之前只有Java类库能够使用CAS,例如J.U.C包里面的整数原子类，其中的compareAndSet()和getAndIncrement()等方法都使用了Unsafe类的CAS操作来实现。用户程序如果需要使用CAS操作，可以采用反射手段突破Unsafe的访问限制。</p>
-<p>​        尽管CAS看起来很美好，既简单又高效，但是显然这种操作无法涵盖互斥同步的所有使用场景，并且CAS从语义上来讲并不是真正的完美，它存在一个逻辑漏洞：ABA问题，即一个变量V初次读取的值为A，并且准备赋值的时候它仍然为A值，那也不能说明V没有被改变过，又能赋值时候的读取实际上是别的线程已经修改后的A值，CAS操作会误认为它从来没有被改变过。J.U.C包为了解决这个问题，体提供了一个带有标记的原子引用类AtomicStampedReference,它通过控制变量值的版本来保证CAS的正确性。CAS另外一个缺点就是在高并发的场景表现会十分糟糕，因为大量线程自旋重试会占用过多的系统资源最后导致程序OOM。</p>
-<h4 id="无同步方案"><a href="#无同步方案" class="headerlink" title="无同步方案"></a>无同步方案</h4><p>​        要保证线程安全，并非一定要进行阻塞或非阻塞同步，同步与线程安全两者没必然的联系。同步只是保障存在共享数据争用时正确性的手段，如果能让一个方法本来就涉及共享数据，那自然就不需要任何同步措施去保证其正确性。Java中有些代码天生是线程安全的。</p>
-<p>​        可重入代码：又称纯代码，可以在代码执行的任意时刻中断，转而去执行另外一段代码，而在控制权返回后，原来的程序不会出现任何错误，也不对对结果有所影响。可重入代码有一些特性，例如不依赖全局变量，存储在堆上的数据和公用的系统资源，用到的状态量都由参数中传入，不调用非重入的方法等，我们可以通过一个比较简单的原则判断代码是否具体可重入性：如果一个方法的返回结果是可以预测的，只要输入了相同的数据，就都能返回相同的结果，那么既满足可重入的要求，当然也是线程安全的。</p>
-<p>​        线程本地存储：如果一段代码中所需要的而数据必须与其他代码共享，那就看看这些共享数据的代码是否能保证在同一个线程中执行，如果能保证我们就可以把共享数据的可见范围限制在同一个线程之内，这样无须同步也能保证线程之间不出现数据争用的问题。我们最熟悉的java.lang.ThreadLocal类就可以实现本地存储功能。</p>
-<h3 id="锁优化"><a href="#锁优化" class="headerlink" title="锁优化"></a>锁优化</h3><p>​        高效并发是从JDK1.5升级到JDK1.6后一项重要的改进项，HotSpot虚拟机开发团队花费了大量资源去实现各种锁优化技术，如<strong>适应性自旋、锁消除、锁膨胀、轻量级锁、偏向锁</strong>等，这些技术都是为了在线程之间更高效地共享数据及解决竞争问题。从此以后synchronized地性能有了质地提升。</p>
-<h4 id="自旋锁与适应性自旋锁"><a href="#自旋锁与适应性自旋锁" class="headerlink" title="自旋锁与适应性自旋锁"></a>自旋锁与适应性自旋锁</h4><p>​        前面已经讲过互斥锁最大地问题在于阻塞的实现、挂起线程和恢复线程的操作都需要转入内核态完成。这给Java虚拟机的并发性带来很大的压力，同时，虚拟机团队注意到在许多应用上，共享数据的锁定状态只会持续很短的一段时间，为了这很短的时间取挂起和恢复线程付出的代价实在太大了点，我们不妨让请求锁的对象在原地”稍等一会”，但不放弃处理器的执行时间，看看持有锁的线程是否很快就会释放锁。为了让线程“等待”，我们只须让线程执行一个忙循环(自旋)，这项技术就是所谓的自旋锁，实际上只是一种逻辑加锁，物理上并没有实现加锁的方式。</p>
-<p>​        自旋等待不代表阻塞，但它是要占用处理器时间的，所以如果锁被占用的时间很短，自旋等待的效果会很好，反之，如果锁占用时间很长，那么自旋的线程只会白白消耗处理器资源，不会做有价值的工作。自旋可以通过-XX:+UseSpining参数开启，次数默认是10次，可以通过-XX:PreBlockSpin自行修改。</p>
-<p>​        所谓的适应性自旋就是在原来自旋的基础之上，自旋时间不再是固定的，而是由前一次在同一个锁上的自旋时间及锁的拥有者的状态的决定的，简单理解就是同一个锁对象，上一个线程自旋等待马上获得了锁，那么下一个线程就会认为它也有可能获得锁，进而允许自己自旋等待时间相对更长一些，比如持续100次循环。另一方面，如果自旋很少能够获取到锁，那么此后的线程可能直接跳过自旋等待，以免浪费处理器资源，适应性自旋是Java虚拟机对性能监控信息的不断完善，对程序锁的状况预测越来越准确。</p>
-<h4 id="锁消除"><a href="#锁消除" class="headerlink" title="锁消除"></a>锁消除</h4><p>​        锁消除是指虚拟机即时编译器在运行时，对一些代码要求同步，但是对被检测到不可能存在共享数据竞争的锁进行消除。锁消除主要判断依据来源于逃逸分析的数据支持，如果判断到一段代码中，在堆上所有数据都不会逃逸出去被其他线程访问到，那就可以把它们当作栈上数据对待，认为它们是线程私有的，同步加锁自然就无须进行。    </p>
-<p>​        可能会为此感到疑惑，变量是否逃逸，对虚拟机来讲需要使用复杂的过程分析才能确定，但是对于我们程序员自己应该是很清楚，怎么会明知道不可能存在数据争用的情况下还需要同步呢？答案是有许多同步措施并不是程序员自己加入的，同步的代码在Java程序中出现的频繁程度也许超过了大部分程序员的想象，如下代码</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">concatString</span><span class="params">(String s1, String s2, String s3)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> s1 + s2 + s3;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>​        由于String是一个不可变的类，对字符串的连接操作总是通过生成新的String对象来进行的，因此Javac编译器会对String连接做自动优化。在JDK5之前，字符串加法会转化为StringBuffer对象的连续append()操作，在JDK5以后的版本中，会转为StringBuilder对象的连续append()操作，所以上述代码会变成如下代码：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">concatString</span><span class="params">(String s1, String s2, String s3)</span> </span>&#123;</span><br><span class="line">    StringBuilder sb = <span class="keyword">new</span> StringBuilder();</span><br><span class="line">    sb.append(s1);</span><br><span class="line">    sb.append(s2);</span><br><span class="line">    sb.append(s3);</span><br><span class="line">    <span class="keyword">return</span> sb.toString();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>​        现在你肯定不会认为这段代码没有涉及同步了吧，每个StringBuffer.append()方法中都有一个同步块，锁都是sb对象。。虚拟机观察变量sb,经过逃逸分析后发现它的动态作用域被限制在concatString()方法内部，也就是sb的所有引用都永远不会逃逸到concatString()方法之外。在解释执行这里仍然会加锁，到那时经过服务端编译器即时编译之后，这段代码的就会忽略所有的同步措施而直接执行。</p>
-<h4 id="锁粗化"><a href="#锁粗化" class="headerlink" title="锁粗化"></a>锁粗化</h4><p>​        编写同步代码时，我们总是推荐将同步块的作用范围限制得尽量下——只在共享数据得实际作用域中才进行同步，这样是为了使得需要同步的操作数量尽可能变少，即使存在竞争，等待锁的线程也能更快的拿到锁。</p>
-<p>​        大多数情况下，上面的原则都是正确的，但是如果一系列的连续操作都对同一个对象反复加锁和解锁，甚至加锁操作时出现在循环体中的，那么即使没有线程竞争，频繁的进行互斥同步操作也会导致不必要的性能损耗。</p>
-<p>​        上面的代码就属于这类情况，如果虚拟机探测到有这样一串零碎的操作都对同一个对象加锁，将会把锁同步的范围扩展(粗化)到这个操作序列的外部。</p>
-<h4 id="轻量级锁"><a href="#轻量级锁" class="headerlink" title="轻量级锁"></a>轻量级锁</h4><p>​        JDK6加入的新型锁机制，它的名字中的“轻量级”是相对于操作系统互斥量来实现的传统锁而言，因此传统的锁机制就被成为“重量级”锁。需要明确的是，轻量级锁并不是用来代替重量级锁的，它设计的初衷是在没有多线程竞争的前提下，减少传统重量级锁使用操作系统互斥量产生的性能损耗。</p>
-<p>​        要理解轻量级锁以及其后的偏向锁的原理和运作过程，必须对HotSpot虚拟机对象的内存布局(尤其是对象头)有所了解，HotSpot虚拟机的对象头(Object Header)分两部分，第一部分用于存储对象自身运行时数据，如哈希码(HashCode)、GC分代年龄等，这部分数据的长度在32位和64位的Java虚拟机中分别会占用32个或64个比特，官方成为“Mark Word”。这部分时实现轻量级锁和偏向锁的关键。另外一部分是用于存储指向方法区对象类型数据的指针，如果是数组对象，还会有一个额外的部分用于存储数组长度。</p>
-<p>​        由于对象头信息是与对象自身定义的数据无关的额外的存储成本，考虑到Java虚拟机的空间使用效率，Mark Word被设计成一个非固定的动态数据结构，以便在极小的空间内存存储尽量多的信息。例如在32位的HotSpot虚拟机中，对象未被锁定的状态下，Mark Word的32个比特空间里的25个比特将用于存储对象哈希码，4个比特用于存储对象分代年龄，2个比特用于存储锁标志位，还有1个比特固定为0(表示未进入偏向模式)。对象除了未被锁定的正常状态外，还有轻量级锁定，重量级锁定、GC标志、可偏向等多种状态，这些状态下的对象头存储内容如下表</p>
-<img src="https://img-blog.csdn.net/20151217151455512?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center" alt="img" style="zoom:67%;" />
-
-<p>​        轻量级锁的工作过程：<strong>在代码即将进入同步块的时候，如果此对象没有被锁定(锁标志为“01”状态)，虚拟机首先将在当前线程的栈帧种建立一个名为锁记录(Lock Record)的空间，用于存储锁对象目前的Mark Word的拷贝，然后，虚拟机将使用CAS操作尝试把对象的Mark word更新为指向Lock Record的指针，如果成功了，就代表当前线程拥有了这个对象的锁，并且对象Mark Word的锁标志位将转变为“00”，表示此对象处于轻量级锁定状态</strong>。</p>
-<p>​        如果CAS更新操作失败，那意味着至少存在一条线程与当前线程获取竞争该对象的锁。虚拟机首先会检查对象的Mark Word是否指向当前线程的栈帧，如果是，说明当前线程已经持有这个对象的锁，那么直接进入同步块继续执行就可以了，否则说明这个对象锁已经被其他线程抢占了。如果出现两条以上的线程抢占锁，那轻量级锁就不再生效了，立即膨胀为重量级锁，锁的标志为变为“10”，此时Mark Word中存储的就是指向重量级锁的指针，后面等待锁的线程必须进入阻塞状态。</p>
-<p>​        轻量级锁提升程序同步性能的依据是“对于绝大部分的锁，整个同步周期内都是不存在竞争的”这一经验法则，如果存在竞争，处理互斥量的本身开销外，还额外发生了CAS开销。因此在有竞争的情况下，轻量级锁反而会比传统的重量级锁更慢。</p>
-<h4 id="偏向锁"><a href="#偏向锁" class="headerlink" title="偏向锁"></a>偏向锁</h4><p>​        偏向锁也是JDK6中引入的一项锁优化措施，它的目的是消除数据的在无竞争情况下的同步原语，进一步提高程序性能。你可以理解为轻量级锁是在无竞争的情况下使用了CAS操作去消除同步使用的互斥量，而偏向锁就是在无竞争的情况下把整个同步都消除掉，连CAS都不去做了。</p>
-<p>​        偏向锁，顾名思义，就是偏向某个线程的锁。那到底偏向的是哪个锁呢？什么条件下才能满足偏向锁条件呢？它偏向的是第一个获得它的线程，这点应该很好理解，如果在接下来的执行过程中，该锁一直没有被其他的线程获取，则持有偏向锁的线程将永远不需要再进行同步。假设当前虚拟机启用了偏向锁(启用参数-XX:+UseBiasedLocking，默认启动)，那么当锁对象第一次被线程获取的时候，虚拟机会将对象头中的标志位设置为“01”，把偏向模式设置为“1”，表示进入偏向锁模式。同时使用CAS操作把获取到这个锁的线程ID记录再对象的Mark Word中，如果CAS操作成功，持有偏向锁的线程以后每次进入这个锁相关的同步块时，虚拟机都可以不再进行任何同步操作(注意：前提是没有竞争)。</p>
-<p>​        一旦出现另外一个线程去获取这个锁的情况，偏向模式马上宣布结束。根据锁对象目前是否处于被锁定状态决定是否撤销偏向(偏向模式设置为“0”)，<strong>撤销后标志位恢复到未锁定(标志位为“01”)或轻量级锁(标志位为“00”)</strong>，之所以出现两种状态取决于是否执行重偏向，如果支持恢复为可偏向但未偏向(未锁定)，如果不支持，恢复为轻量级锁，后续的同步操作按照轻量级锁模型进行。</p>
-<p>​        值得一提的是，偏向锁的ID需要记录在Mark Word(占用23个比特)，你可能为此感到疑惑：那对象的哈希码值怎么办？在Java语言里面一个对象如果计算过哈希码，就应该一直保持该值不变(强烈推荐但不强制，因为用户可以重载hashCode()方法按自己的意愿返回哈希码)，否则很多依赖对象哈希码的API都可能存在出错风险。而大多数对象的哈希码来源是Object::hashCode()方法，返回的是对象的一致性哈希码，这个值能强制保证不变的，它通过在对象头存储计算结果来保证第一次计算之后，再次调用该方法取到的哈希码值永远不会再发生改变。因此，当一个对象已经计算过一致性哈希码后，它就再也无法进入偏向锁状态；而当一个对象当前正处于偏向锁状态，又收到需要计算其一致性哈希码请求时，它的偏向状态里面被撤销，并且锁会膨胀为重量级锁。在重量级锁的实现中，对象头指向了重量级锁的位置，代表重量级锁的ObjectMonitor类里有字段可以记录非加锁状态(标志位为“01”)下的Mark Word，其中自然可以存储原来的哈希码。</p>
-<p>​        偏向锁可以提高带有同步但无竞争的程序性能，但它同样是一个带有效益权衡性质的优化，也就是说它并非总是对程序运行有利。如果在多线程环境下， 那偏向模式就是多余的。关于偏向锁的启用及参数可以通过查看JVM参数配置，JVM启动之后并不会里面开启偏向锁，默认4秒之后开启，之所以这样做是因为JVM运行时是多线程模式，如果启动就开启偏向锁，不但多余对启动性能也有所影响，。</p>
-<h4 id="锁升级过程"><a href="#锁升级过程" class="headerlink" title="锁升级过程"></a>锁升级过程</h4><p><img src="https://img-blog.csdn.net/20180908110545722?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2JhaWR1XzM4MDgzNjE5/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70" alt="img"></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/06/04/Java%E7%BA%BF%E7%A8%8B%E5%AE%9E%E7%8E%B0%E4%B8%8Esynchronized%E9%94%81%E4%BC%98%E5%8C%96/" data-id="ckb0b8jss0000wor608ap7f8w" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul>
-
-    </footer>
-  </div>
   
 </article>
-
-
-  
-    <article id="post-你到底了不了解volatile" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2020/06/04/%E4%BD%A0%E5%88%B0%E5%BA%95%E4%BA%86%E4%B8%8D%E4%BA%86%E8%A7%A3volatile/" class="article-date">
-  <time datetime="2020-06-04T04:50:14.000Z" itemprop="datePublished">2020-06-04</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/06/04/%E4%BD%A0%E5%88%B0%E5%BA%95%E4%BA%86%E4%B8%8D%E4%BA%86%E8%A7%A3volatile/">你到底了不了解volatile?</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="volatile"><a href="#volatile" class="headerlink" title="volatile"></a>volatile</h1><p>​        JVM关键字 ,语义：保证有序性和可见性。在理解volatile之前先了解Java内存模型。</p>
-<h3 id="Java内存模型"><a href="#Java内存模型" class="headerlink" title="Java内存模型"></a>Java内存模型</h3><p>​        Java虚拟机规范试图定义一种Java内存模型来屏蔽掉各种硬件和操作系统的内存访问差异。通过定义主内存和本地内存来制定程序中各个变量的访问规则，也就是虚拟机中将变量存储到内存和从内存中读取变量这样的底层细节。此处的变量包括了实例字段、静态字段、和构成数组对象的元素，但不包括局部变量和方法参数，因为后者是线程私有的。Java内存模型没有限制执行引擎使用处理器的特定寄存器或缓存来和主存进行交互，也没有限制即时编译器进行调整嗲吗执行顺序这类优化措施(与volatile直接相关，下文祥讲)。</p>
-<p>​        Java内存模型规定了所有的变量都存储在主存中，每条线程有自己的工作内存，线程的工作内存中保存了该线程使用到的变量的主存副本拷贝，线程对变量所有的操作必须在本地内存中进行，不同的线程无法直接访问对方工作内存中的变量，必须经过主内存(该模型与Java内存区域的堆、栈、方法区等不是同一个层次的内存划分，基本上没啥关系)，需要注意的是volatile变量的访问同样需要拷贝到本地内存中，但是由于它特殊的操作顺序性规定使它看上去就像是在主内存读写访问一样。</p>
-<h3 id="内存间交互操作"><a href="#内存间交互操作" class="headerlink" title="内存间交互操作"></a>内存间交互操作</h3><p>​        Java内存模型定义了8种操作来完成主内存和本地内存间的交互细节，虚拟机实现时必须保证这8种操作是原子性的，不可再分的(long、double类型变量除外)。</p>
-<ul>
-<li><p>lock(锁定)：作用于主内存的变量，把一个变量标识为一个线程独占</p>
-</li>
-<li><p>unlock(解锁)：作用于主内存的变量，把一个处于锁定状态的变量释放，释放之后才能被其他线程锁定</p>
-</li>
-<li><p>read(读取)：作用于主内存的变量，把一个变量的值从主内存传输到线程的工作内存中，以便随后的load动作使用</p>
-</li>
-<li><p>load(载入)：作用于工作内存的变量，把read操作从主内存中得到的变量值放入工作内存的变量副本中</p>
-</li>
-<li><p>use(使用)：作用于工作内存的变量，把工作内存中一个变量的值传递给执行引擎，每当虚拟机遇到一个需要使用的变量值的字节码指令时将会执行这个操作</p>
-</li>
-<li><p>assign(赋值)：作用于工作内存的变量，把一个从执行引擎接收到的值赋给工作内存的变量，每当虚拟机遇到一个给变量赋值的字节码指令时执行这个操作</p>
-</li>
-<li><p>store(存储)：作用于工作内存的变量，把工作内存中一个变量的值传给主内存中，一边随后的write操作使用</p>
-</li>
-<li><p>write(写入)：作用于主内存的变量，把store操作从工作内存中得到的变量的值放入主内存中的变量中</p>
-<p>​    </p>
-<p>​    如果把一个变量从主内存复制到工作内存中，那就要顺序地执行read和load操作，如果要把变量从工作内存同步回主内存，那就要顺序执行store和write操作，Java内存只要求这两个操作必须按顺序执行，而没有保证是连续执行，也就是说read与load之间，store与write之间是可插入其他指令的，这也是乱序执行出现的先天条件，另外Java内存模型还定义了以上操作必须遵循的规则，加上volatile的一些特殊规定就已经完全确定了Java内存中哪些内存访问操作是在并发下是安全的。</p>
-</li>
-</ul>
-<h3 id="volatile语义"><a href="#volatile语义" class="headerlink" title="volatile语义"></a>volatile语义</h3><p>​        关键字volatile可以说是Java虚拟机提供的最轻量级的同步机制。当一个变量被定义为volatile类型之后，它具备两种特性，第一种是保证此变量对所有线程的可见性，也就是说，当一个线程修改了这个变量的值，新值对于其他线程是立即可见的，这是普通变量不能做到的，对于普通变量的值被修改之后，需要将本地内存的值回写主内存，其他才能读取到最新值。使用volatile第二个语义是禁止指令重排序优化，普通变量只能保证该方法执行过程种所有的依赖结果的地方都能获取到正确的结果，而不能保证变量赋值操作的顺序与程序代码中顺序一致。因为在一个线程执行过程中无法感知到这点，这也是Java内存模型中描述的所谓”线程内表现为串行的语义(Within-Thread As-If-Serial Semantics)”，需要注意的指令重排序优化是机器级的优化操作，提前执行的代码是指这代码对应的汇编代码被提前执行。</p>
-<h3 id="为什么需要保证有序性？"><a href="#为什么需要保证有序性？" class="headerlink" title="为什么需要保证有序性？"></a>为什么需要保证有序性？</h3><p>​        这个问题在单核环境下是不需要考虑的。既然volatie能够保证指令有序那么一定是出现了乱序执行，为什么会乱序执行？首先需要了解CPU相关原理和优化。</p>
-<h3 id="CPU指令乱序优化"><a href="#CPU指令乱序优化" class="headerlink" title="CPU指令乱序优化"></a>CPU指令乱序优化</h3><p>​        如你所见,这里的乱序实际上是一种优化。CPU将主存的指令通过总线读取到寄存器，然后由ALU(逻辑运算单元)进行运算，整个过程几乎所有的时间都用在将主存的指令加载进寄存器，与ALU处理有几个数量级的差距(大概100倍)。想象一下，主存将两条指令加载到寄存器中，第一条指令需要再次执行I/O操作读取主存某一位置的数据，第二条指令是数据运算，那么在指令乱序执行出现之前，CPU只能老老实实等到I/O操作完成之后再进行运算，等待的这段时间足够100次运算，这对于CPU来讲是不可接受的，为了提高CPU利用率，CPU采用了允许将多条指令不按程序规定的顺序分开发送给各相应电路单元处理。但并不是说指令任意重排，CPU需要正确处理指令依赖情况以保障程序能得到正确的执行结果。举个例子，指令1读取主存中a的大小，指令2对读取到的a加1，指令3将地址b的值加10，CPU分析出指令3对于1、2没有依赖，那么执行顺序可能调整为3、1、2。这样看来乱序执行不但没有影响最终结果反而提高了CPU利用率。但是在多核环境中，CPU乱序优化可能弄巧成拙带来不符合预期的结果。典型的就是DCL单例模型，因为Java对象的创建并不是原子操作，乱序执行可能会将内存地址指向对象引用在初始化完成之前执行，线程虽然已经拿到不为null的对象，但是对象并未完成初始化，酿成大错。这就是机器级的优化操作。</p>
-<h3 id="为何说volatile禁止指令重排序？"><a href="#为何说volatile禁止指令重排序？" class="headerlink" title="为何说volatile禁止指令重排序？"></a>为何说volatile禁止指令重排序？</h3><p>​        再举个例子，在多核环境下，指令1把地址A的值加10，指令2把地址A中的值乘以2，指令3把地址B中的值减去3，这时指令1和指令2是有依赖的，它们之间的顺序不能重排——（A+10x2和Ax2+10显然是不相同的，但是指令3是可以排在任意位置。volatile此时能够保证指令1和指令2按顺序执行，得到正确的结果。</p>
-<h4 id="DCL单例"><a href="#DCL单例" class="headerlink" title="DCL单例"></a>DCL单例</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SingleTonDemo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">static</span> Demo singleInstance;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">SingleTonDemo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Demo <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (singleInstance == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (SingleTonDemo<span class="class">.<span class="keyword">class</span>) </span>&#123;</span><br><span class="line">                <span class="keyword">if</span> (singleInstance == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    singleInstance = <span class="keyword">new</span> Demo();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> singleInstance;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Demo</span> </span>&#123;</span><br><span class="line">        <span class="keyword">private</span> Integer a;</span><br><span class="line">        </span><br><span class="line">        <span class="function"><span class="keyword">public</span> Integer <span class="title">getA</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> a;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setA</span><span class="params">(Integer a)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">this</span>.a = a;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="volatile底层内存屏障的实现"><a href="#volatile底层内存屏障的实现" class="headerlink" title="volatile底层内存屏障的实现"></a>volatile底层内存屏障的实现</h3><p>​        将上述DCL单例代码编译后发现，volatile修饰的变量在赋值后多执行一个“ <em>lock add1 $0x0,(%esp)</em>”操作，这个操作相当于一个内存屏障(指重排序时不能把后面的指令重排序到内存屏障之前的位置)，只有一个CPU访问内存时，并不需要内存屏障：但如果有两个或者更多CPU访问同一块内存，且其中一个在观测另外一个，就需要内存屏障来保证一致性。<em>lock add1 $0x0,(%esp)esp</em>，没有采用nop空操作指令是因为lock前缀不允许配合nop指令，关于lock前缀，它的作用是使得本CPU得Cache写入主存，该动作也会引起别的CPU或者别的内核的Cache无效化(invalidate,这里涉及到内存一致性协议MESI),这种操作相当于对Cache中的变量做了一次前面Java内存模型中的<strong>store</strong>和<strong>write</strong>操作。</p>
-<h3 id="volatile并不安全"><a href="#volatile并不安全" class="headerlink" title="volatile并不安全"></a>volatile并不安全</h3><p>​        volatile只能保证语句可见性和有序性，并不保证原子性，如DCL单例，如果需要保证单例正确创建仍然需要synchronized关键字或JUC中的锁保证同步。</p>
-<h3 id="volatile的性能"><a href="#volatile的性能" class="headerlink" title="volatile的性能"></a>volatile的性能</h3><p>​        与众多的保障并发安全的工具相比，volatile的性能如何？某些情况下volatile的同步机制性能确实要优于锁(synchronized关键字或JUC包里面的锁)，但由于虚拟机对锁实行了许多消除和优化，使得很难量化的认为volatile就会比synchronized快多少。与普通变量相比，volatile的读操作性能消耗和普通变量几乎没有查别，写操作稍慢，因为需要插入内存屏障指令保证处理器不发生乱序执行。即便如此，多数场景下volatile的总开销仍然比锁低，我们在使用volatile和锁中做选择唯一依据仅仅是volatile语义能够满足使用场景。</p>
-<h3 id="Java内存模型对volatile变量定义的特殊规则"><a href="#Java内存模型对volatile变量定义的特殊规则" class="headerlink" title="Java内存模型对volatile变量定义的特殊规则"></a>Java内存模型对volatile变量定义的特殊规则</h3><p>​        假设T表示一个线程,V和W表示volatile变量。在进行read,load,use,assign,store和write操作使需要的规则：</p>
-<ul>
-<li><input disabled="" type="checkbox"> 只有T对V执行一个load动作时，T才能对V执行use动作，并且只有T对V的后一个动作时use，才能执行load。use动作可以看作与load,read相关联，必须连在一起出现(这条规则要求在工作内存中每次使用V前都必须先从主内存刷新最新值)</li>
-<li><input disabled="" type="checkbox"> 只有T对V执行的前一个动作时assign的时候，T才能对V执行store,并且只有T对V执行的后一个动作时store的时候,T才能对V执行assign，T对V的assign动作可以看作与store,write动作相关联，必须连在一起出现(这条规则要求在工作内存中每次修改都必须立刻同步回主内存中)</li>
-<li><input disabled="" type="checkbox"> 假定动作A是T对V实施的use或assign动作，假定F是和动作A相关联的load或store动作，假定动作P是动作F相应的对变量V的read或write动作，类似的，假定动作B是线程T对变量W实施的use或assign动作，假定动作G是和动作B相关联的load或store动作，假定动作Q是和动作G相应的对变量W的read或write动作，如果A先于B，那么先于Q(这条规则要求volatile修饰的变量不会被指令重排序优化，保证代码的执行顺序与程序的顺序相同)</li>
-</ul>
-<h3 id="Java提供了几种可见性实现？"><a href="#Java提供了几种可见性实现？" class="headerlink" title="Java提供了几种可见性实现？"></a>Java提供了几种可见性实现？</h3><p>​        除了volatile，Java还提供了synchronized和final两个关键字实现可见性。同步块的可见性是由“对一个变量执行unlock操作之前必须将此变量同步回主内存中(执行store,write)”。而final关键字的可见性是指，被final修饰的字段在构造器中一旦初始化完成，并且构造器中没有把“this”的引用传递出去(this引用逃逸是一件危险的事情，其他线程可能通过这个引用访问到“初始化一半的对象”)，那在其他线程中就能看见final字段的值。关于final的可见性保证不是很容易理解，通过下面的例子可能对于理解有更多的帮助。</p>
-<p>​        final修饰的变量只能显示的赋值一次，但是不代表不可以多次初始化，例如：final int a;a在构造函数之前已经被初始化值为0，为了保证final修饰的值不会在初始化之前被访问到，我们需要保证在构造函数中，正在被构造的对象引用”this”没有逸出。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FinalTest</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> a;</span><br><span class="line">    Object object;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">FinalTest</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        a = <span class="number">1</span>;</span><br><span class="line">        <span class="comment">// 这里在构造函数中将this引用逸出了，假如这里发生重排序，a=1在Object=this之后执行，那么其他线程可能访问到a=0</span></span><br><span class="line">        object = <span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="happens-before-先行发生"><a href="#happens-before-先行发生" class="headerlink" title="happens-before(先行发生)"></a>happens-before(先行发生)</h3><p>如果Java内存模型中所有的有序性仅仅依靠volatile和synchronized完成，那么有一些操作会变得很复杂,Java语言中有一个“先行发生（happens-before)的原则，这个原则非常重要，它是判断数据是否存在竞争、线程是否安全的主要依据。</p>
-<p>​        先行发生是Java内存模型中定义两项操作之间的偏序关系，如果说操作A先行发生于操作B，其实就说发生操作B之前，操作A产生的影响能够被操作B观察到。Java内存模型存在一些”天然的”先行发生关系，这些先行发生关系不需要任何同步器协调就已经存在，可以在编译中直接使用，如果两个操作之间的关系不在此列，并且从这些规则中无法推导出来，那他们就没有任何顺序性保障。</p>
-<ul>
-<li><input disabled="" type="checkbox"> 程序次序规则：在一个线程内，按照代码顺序，书写在前面的操作先行发生于后面的操作，准确来说，应是控制流顺序而不是程序代码顺序，因为要开发分支，循环等结构。</li>
-<li><input disabled="" type="checkbox"> 管程锁定规则：一个unlock操作先行发生与后面对通过一个锁的lock操作</li>
-<li><input disabled="" type="checkbox"> volatile变量规则：对于一个volatile变量的写操作先行发生于后面对这个变量的读操作，”后面”是指时间上的先后顺序</li>
-<li><input disabled="" type="checkbox"> 线程启动规则：Thread对象的start()方法先行发生于此线程的每一个动作</li>
-<li><input disabled="" type="checkbox"> 线程终止规则：线程中所有的操作必须先行发生于对此线程的终止检测，可以通过Thread.join()、Thread.isAlive()返回值等手段检测到线程已经终止执行。</li>
-<li><input disabled="" type="checkbox"> 线程中断规则：对线程的interrupt()方法的调用先行发生于被中断线程的代码检测到中断事件的发生，可以通过Thread.interrupt()方法检测到是否有中断发生。</li>
-<li><input disabled="" type="checkbox"> 对象终结规则：对一个对象的初始化完成(构造函数执行完成)先行发生于它的finalize()方法开始</li>
-<li><input disabled="" type="checkbox"> 传递性：如果操作A先行发生于操作B，操作B先行发生于操作C，那么可以得出操作A先行发生于操作C。</li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2020/06/04/%E4%BD%A0%E5%88%B0%E5%BA%95%E4%BA%86%E4%B8%8D%E4%BA%86%E8%A7%A3volatile/" data-id="ckb0ayywc00007or6bv7g9g2t" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-
 
 </section>
         
