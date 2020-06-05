@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+  <!-- Html Head Tag-->
+  <head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="supiaol">
+  
+  
+  <!-- Open Graph Data -->
+  <meta property="og:title" content="你到底了不了解volatile?"/>
+  <meta property="og:description" content="" />
+  <meta property="og:site_name" content="不忘长安"/>
+  <meta property="og:type" content="article" />
+  <meta property="og:image" content="http://yoursite.com"/>
+  
+    <link rel="alternate" href="/atom.xml" title="不忘长安" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/images/favicon.ico">
+  
+
+  <!-- Site Title -->
+  <title>不忘长安</title>
+
+  <!-- Bootstrap CSS -->
+  
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+
+  
+<link rel="stylesheet" href="/css/font-awesome.min.css">
+
+  <!-- Custom CSS -->
+  
+<link rel="stylesheet" href="/css/style.css">
+
+
+  <!-- Google Analytics -->
+  
+
+  <!-- BaiDu Analytics -->
+  
+
+
+
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+  <body>
+    <!-- Page Header -->
+
+
+<nav class="navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse site-menu">
+            <ul class="nav navbar-nav navbar-right">
+                
+                    <li>
+                        <a href="/">
+                            
+                                Home
+                            
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="/archives">
+                            
+                                Archives
+                            
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="/about">
+                            
+                                About
+                            
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="mailto:<your email-address>">
+                            
+                                Email
+                            
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="/%5Bobject%20Object%5D">
+                            
+                                <i class="icon fa fa-github fa-lg"></i>
+                            
+                        </a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Header -->
+<header class="site-header header-background intro-header" style="background-image: url(/img/default-banner.jpg)">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="page-title with-background-image">
+          <p class="title">你到底了不了解volatile?</p>
+          <p class="subtitle"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<article>
+  <div class="container typo">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="post-info text-muted">
+          
+            <!-- Author -->
+            <span class="author info">By supiaol</span>
+          
+          <!-- Date -->
+          <span class="date-time info">On
+            <span class="date">2020-06-04T12:50:14+08:00</span>
+            <!--<span class="date">2020-06-04</span>
+            <span class="time">15:34:57</span> -->
+          </span>
+          
+        </div>
+        <!-- Tags -->
+        
+          <div class="post-tags text-muted">
+            Tags: 
+
+<a class="tag" href="/tags/Java/">#Java</a>
+
+
+          </div>
+        
+        <!-- Post Main Content -->
+        <div class="post-content">
+          <h1 id="volatile"><a href="#volatile" class="headerlink" title="volatile"></a>volatile</h1><p>​        JVM关键字 ,语义：保证有序性和可见性。在理解volatile之前先了解Java内存模型。</p>
+<h3 id="Java内存模型"><a href="#Java内存模型" class="headerlink" title="Java内存模型"></a>Java内存模型</h3><p>​        Java虚拟机规范试图定义一种Java内存模型来屏蔽掉各种硬件和操作系统的内存访问差异。通过定义主内存和本地内存来制定程序中各个变量的访问规则，也就是虚拟机中将变量存储到内存和从内存中读取变量这样的底层细节。此处的变量包括了实例字段、静态字段、和构成数组对象的元素，但不包括局部变量和方法参数，因为后者是线程私有的。Java内存模型没有限制执行引擎使用处理器的特定寄存器或缓存来和主存进行交互，也没有限制即时编译器进行调整嗲吗执行顺序这类优化措施(与volatile直接相关，下文祥讲)。</p>
+<p>​        Java内存模型规定了所有的变量都存储在主存中，每条线程有自己的工作内存，线程的工作内存中保存了该线程使用到的变量的主存副本拷贝，线程对变量所有的操作必须在本地内存中进行，不同的线程无法直接访问对方工作内存中的变量，必须经过主内存(该模型与Java内存区域的堆、栈、方法区等不是同一个层次的内存划分，基本上没啥关系)，需要注意的是volatile变量的访问同样需要拷贝到本地内存中，但是由于它特殊的操作顺序性规定使它看上去就像是在主内存读写访问一样。</p>
+<h3 id="内存间交互操作"><a href="#内存间交互操作" class="headerlink" title="内存间交互操作"></a>内存间交互操作</h3><p>​        Java内存模型定义了8种操作来完成主内存和本地内存间的交互细节，虚拟机实现时必须保证这8种操作是原子性的，不可再分的(long、double类型变量除外)。</p>
+<ul>
+<li><p>lock(锁定)：作用于主内存的变量，把一个变量标识为一个线程独占</p>
+</li>
+<li><p>unlock(解锁)：作用于主内存的变量，把一个处于锁定状态的变量释放，释放之后才能被其他线程锁定</p>
+</li>
+<li><p>read(读取)：作用于主内存的变量，把一个变量的值从主内存传输到线程的工作内存中，以便随后的load动作使用</p>
+</li>
+<li><p>load(载入)：作用于工作内存的变量，把read操作从主内存中得到的变量值放入工作内存的变量副本中</p>
+</li>
+<li><p>use(使用)：作用于工作内存的变量，把工作内存中一个变量的值传递给执行引擎，每当虚拟机遇到一个需要使用的变量值的字节码指令时将会执行这个操作</p>
+</li>
+<li><p>assign(赋值)：作用于工作内存的变量，把一个从执行引擎接收到的值赋给工作内存的变量，每当虚拟机遇到一个给变量赋值的字节码指令时执行这个操作</p>
+</li>
+<li><p>store(存储)：作用于工作内存的变量，把工作内存中一个变量的值传给主内存中，一边随后的write操作使用</p>
+</li>
+<li><p>write(写入)：作用于主内存的变量，把store操作从工作内存中得到的变量的值放入主内存中的变量中</p>
+<p>​    </p>
+<p>​    如果把一个变量从主内存复制到工作内存中，那就要顺序地执行read和load操作，如果要把变量从工作内存同步回主内存，那就要顺序执行store和write操作，Java内存只要求这两个操作必须按顺序执行，而没有保证是连续执行，也就是说read与load之间，store与write之间是可插入其他指令的，这也是乱序执行出现的先天条件，另外Java内存模型还定义了以上操作必须遵循的规则，加上volatile的一些特殊规定就已经完全确定了Java内存中哪些内存访问操作是在并发下是安全的。</p>
+</li>
+</ul>
+<h3 id="volatile语义"><a href="#volatile语义" class="headerlink" title="volatile语义"></a>volatile语义</h3><p>​        关键字volatile可以说是Java虚拟机提供的最轻量级的同步机制。当一个变量被定义为volatile类型之后，它具备两种特性，第一种是保证此变量对所有线程的可见性，也就是说，当一个线程修改了这个变量的值，新值对于其他线程是立即可见的，这是普通变量不能做到的，对于普通变量的值被修改之后，需要将本地内存的值回写主内存，其他才能读取到最新值。使用volatile第二个语义是禁止指令重排序优化，普通变量只能保证该方法执行过程种所有的依赖结果的地方都能获取到正确的结果，而不能保证变量赋值操作的顺序与程序代码中顺序一致。因为在一个线程执行过程中无法感知到这点，这也是Java内存模型中描述的所谓”线程内表现为串行的语义(Within-Thread As-If-Serial Semantics)”，需要注意的指令重排序优化是机器级的优化操作，提前执行的代码是指这代码对应的汇编代码被提前执行。</p>
+<h3 id="为什么需要保证有序性？"><a href="#为什么需要保证有序性？" class="headerlink" title="为什么需要保证有序性？"></a>为什么需要保证有序性？</h3><p>​        这个问题在单核环境下是不需要考虑的。既然volatie能够保证指令有序那么一定是出现了乱序执行，为什么会乱序执行？首先需要了解CPU相关原理和优化。</p>
+<h3 id="CPU指令乱序优化"><a href="#CPU指令乱序优化" class="headerlink" title="CPU指令乱序优化"></a>CPU指令乱序优化</h3><p>​        如你所见,这里的乱序实际上是一种优化。CPU将主存的指令通过总线读取到寄存器，然后由ALU(逻辑运算单元)进行运算，整个过程几乎所有的时间都用在将主存的指令加载进寄存器，与ALU处理有几个数量级的差距(大概100倍)。想象一下，主存将两条指令加载到寄存器中，第一条指令需要再次执行I/O操作读取主存某一位置的数据，第二条指令是数据运算，那么在指令乱序执行出现之前，CPU只能老老实实等到I/O操作完成之后再进行运算，等待的这段时间足够100次运算，这对于CPU来讲是不可接受的，为了提高CPU利用率，CPU采用了允许将多条指令不按程序规定的顺序分开发送给各相应电路单元处理。但并不是说指令任意重排，CPU需要正确处理指令依赖情况以保障程序能得到正确的执行结果。举个例子，指令1读取主存中a的大小，指令2对读取到的a加1，指令3将地址b的值加10，CPU分析出指令3对于1、2没有依赖，那么执行顺序可能调整为3、1、2。这样看来乱序执行不但没有影响最终结果反而提高了CPU利用率。但是在多核环境中，CPU乱序优化可能弄巧成拙带来不符合预期的结果。典型的就是DCL单例模型，因为Java对象的创建并不是原子操作，乱序执行可能会将内存地址指向对象引用在初始化完成之前执行，线程虽然已经拿到不为null的对象，但是对象并未完成初始化，酿成大错。这就是机器级的优化操作。</p>
+<h3 id="为何说volatile禁止指令重排序？"><a href="#为何说volatile禁止指令重排序？" class="headerlink" title="为何说volatile禁止指令重排序？"></a>为何说volatile禁止指令重排序？</h3><p>​        再举个例子，在多核环境下，指令1把地址A的值加10，指令2把地址A中的值乘以2，指令3把地址B中的值减去3，这时指令1和指令2是有依赖的，它们之间的顺序不能重排——（A+10x2和Ax2+10显然是不相同的，但是指令3是可以排在任意位置。volatile此时能够保证指令1和指令2按顺序执行，得到正确的结果。</p>
+<h4 id="DCL单例"><a href="#DCL单例" class="headerlink" title="DCL单例"></a>DCL单例</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SingleTonDemo</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">static</span> Demo singleInstance;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">SingleTonDemo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Demo <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (singleInstance == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (SingleTonDemo<span class="class">.<span class="keyword">class</span>) </span>&#123;</span><br><span class="line">                <span class="keyword">if</span> (singleInstance == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    singleInstance = <span class="keyword">new</span> Demo();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> singleInstance;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Demo</span> </span>&#123;</span><br><span class="line">        <span class="keyword">private</span> Integer a;</span><br><span class="line">        </span><br><span class="line">        <span class="function"><span class="keyword">public</span> Integer <span class="title">getA</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> a;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setA</span><span class="params">(Integer a)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">this</span>.a = a;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="volatile底层内存屏障的实现"><a href="#volatile底层内存屏障的实现" class="headerlink" title="volatile底层内存屏障的实现"></a>volatile底层内存屏障的实现</h3><p>​        将上述DCL单例代码编译后发现，volatile修饰的变量在赋值后多执行一个“ <em>lock add1 $0x0,(%esp)</em>”操作，这个操作相当于一个内存屏障(指重排序时不能把后面的指令重排序到内存屏障之前的位置)，只有一个CPU访问内存时，并不需要内存屏障：但如果有两个或者更多CPU访问同一块内存，且其中一个在观测另外一个，就需要内存屏障来保证一致性。<em>lock add1 $0x0,(%esp)esp</em>，没有采用nop空操作指令是因为lock前缀不允许配合nop指令，关于lock前缀，它的作用是使得本CPU得Cache写入主存，该动作也会引起别的CPU或者别的内核的Cache无效化(invalidate,这里涉及到内存一致性协议MESI),这种操作相当于对Cache中的变量做了一次前面Java内存模型中的<strong>store</strong>和<strong>write</strong>操作。</p>
+<h3 id="volatile并不安全"><a href="#volatile并不安全" class="headerlink" title="volatile并不安全"></a>volatile并不安全</h3><p>​        volatile只能保证语句可见性和有序性，并不保证原子性，如DCL单例，如果需要保证单例正确创建仍然需要synchronized关键字或JUC中的锁保证同步。</p>
+<h3 id="volatile的性能"><a href="#volatile的性能" class="headerlink" title="volatile的性能"></a>volatile的性能</h3><p>​        与众多的保障并发安全的工具相比，volatile的性能如何？某些情况下volatile的同步机制性能确实要优于锁(synchronized关键字或JUC包里面的锁)，但由于虚拟机对锁实行了许多消除和优化，使得很难量化的认为volatile就会比synchronized快多少。与普通变量相比，volatile的读操作性能消耗和普通变量几乎没有查别，写操作稍慢，因为需要插入内存屏障指令保证处理器不发生乱序执行。即便如此，多数场景下volatile的总开销仍然比锁低，我们在使用volatile和锁中做选择唯一依据仅仅是volatile语义能够满足使用场景。</p>
+<h3 id="Java内存模型对volatile变量定义的特殊规则"><a href="#Java内存模型对volatile变量定义的特殊规则" class="headerlink" title="Java内存模型对volatile变量定义的特殊规则"></a>Java内存模型对volatile变量定义的特殊规则</h3><p>​        假设T表示一个线程,V和W表示volatile变量。在进行read,load,use,assign,store和write操作使需要的规则：</p>
+<ul>
+<li><input disabled type="checkbox"> 只有T对V执行一个load动作时，T才能对V执行use动作，并且只有T对V的后一个动作时use，才能执行load。use动作可以看作与load,read相关联，必须连在一起出现(这条规则要求在工作内存中每次使用V前都必须先从主内存刷新最新值)</li>
+<li><input disabled type="checkbox"> 只有T对V执行的前一个动作时assign的时候，T才能对V执行store,并且只有T对V执行的后一个动作时store的时候,T才能对V执行assign，T对V的assign动作可以看作与store,write动作相关联，必须连在一起出现(这条规则要求在工作内存中每次修改都必须立刻同步回主内存中)</li>
+<li><input disabled type="checkbox"> 假定动作A是T对V实施的use或assign动作，假定F是和动作A相关联的load或store动作，假定动作P是动作F相应的对变量V的read或write动作，类似的，假定动作B是线程T对变量W实施的use或assign动作，假定动作G是和动作B相关联的load或store动作，假定动作Q是和动作G相应的对变量W的read或write动作，如果A先于B，那么先于Q(这条规则要求volatile修饰的变量不会被指令重排序优化，保证代码的执行顺序与程序的顺序相同)</li>
+</ul>
+<h3 id="Java提供了几种可见性实现？"><a href="#Java提供了几种可见性实现？" class="headerlink" title="Java提供了几种可见性实现？"></a>Java提供了几种可见性实现？</h3><p>​        除了volatile，Java还提供了synchronized和final两个关键字实现可见性。同步块的可见性是由“对一个变量执行unlock操作之前必须将此变量同步回主内存中(执行store,write)”。而final关键字的可见性是指，被final修饰的字段在构造器中一旦初始化完成，并且构造器中没有把“this”的引用传递出去(this引用逃逸是一件危险的事情，其他线程可能通过这个引用访问到“初始化一半的对象”)，那在其他线程中就能看见final字段的值。关于final的可见性保证不是很容易理解，通过下面的例子可能对于理解有更多的帮助。</p>
+<p>​        final修饰的变量只能显示的赋值一次，但是不代表不可以多次初始化，例如：final int a;a在构造函数之前已经被初始化值为0，为了保证final修饰的值不会在初始化之前被访问到，我们需要保证在构造函数中，正在被构造的对象引用”this”没有逸出。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FinalTest</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> a;</span><br><span class="line">    Object object;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">FinalTest</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        a = <span class="number">1</span>;</span><br><span class="line">        <span class="comment">// 这里在构造函数中将this引用逸出了，假如这里发生重排序，a=1在Object=this之后执行，那么其他线程可能访问到a=0</span></span><br><span class="line">        object = <span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="happens-before-先行发生"><a href="#happens-before-先行发生" class="headerlink" title="happens-before(先行发生)"></a>happens-before(先行发生)</h3><p>如果Java内存模型中所有的有序性仅仅依靠volatile和synchronized完成，那么有一些操作会变得很复杂,Java语言中有一个“先行发生（happens-before)的原则，这个原则非常重要，它是判断数据是否存在竞争、线程是否安全的主要依据。</p>
+<p>​        先行发生是Java内存模型中定义两项操作之间的偏序关系，如果说操作A先行发生于操作B，其实就说发生操作B之前，操作A产生的影响能够被操作B观察到。Java内存模型存在一些”天然的”先行发生关系，这些先行发生关系不需要任何同步器协调就已经存在，可以在编译中直接使用，如果两个操作之间的关系不在此列，并且从这些规则中无法推导出来，那他们就没有任何顺序性保障。</p>
+<ul>
+<li><input disabled type="checkbox"> 程序次序规则：在一个线程内，按照代码顺序，书写在前面的操作先行发生于后面的操作，准确来说，应是控制流顺序而不是程序代码顺序，因为要开发分支，循环等结构。</li>
+<li><input disabled type="checkbox"> 管程锁定规则：一个unlock操作先行发生与后面对通过一个锁的lock操作</li>
+<li><input disabled type="checkbox"> volatile变量规则：对于一个volatile变量的写操作先行发生于后面对这个变量的读操作，”后面”是指时间上的先后顺序</li>
+<li><input disabled type="checkbox"> 线程启动规则：Thread对象的start()方法先行发生于此线程的每一个动作</li>
+<li><input disabled type="checkbox"> 线程终止规则：线程中所有的操作必须先行发生于对此线程的终止检测，可以通过Thread.join()、Thread.isAlive()返回值等手段检测到线程已经终止执行。</li>
+<li><input disabled type="checkbox"> 线程中断规则：对线程的interrupt()方法的调用先行发生于被中断线程的代码检测到中断事件的发生，可以通过Thread.interrupt()方法检测到是否有中断发生。</li>
+<li><input disabled type="checkbox"> 对象终结规则：对一个对象的初始化完成(构造函数执行完成)先行发生于它的finalize()方法开始</li>
+<li><input disabled type="checkbox"> 传递性：如果操作A先行发生于操作B，操作B先行发生于操作C，那么可以得出操作A先行发生于操作C。</li>
+</ul>
+
+        </div>
+        <!-- Comments -->
+        
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+
+      </div>
+    </div>
+  </div>
+</article>
+
+
+
+    
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <p class="copyright text-muted">
+        &copy; 2016 -  2020
+        <span class="with-love">
+            <i class="fa fa-heart"></i>
+        </span>
+        <span class="author">supiaol</span>
+
+        
+
+        
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+        <p class="visit-statistics">
+            <span id="busuanzi_container_site_pv">
+              本站总访问：<span id="busuanzi_value_site_pv"></span>次
+              &nbsp;&nbsp;&nbsp;&nbsp;
+            </span>
+        <p>
+        
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+    <!-- After Footer Scripts -->
+
+<script src="/js/highlight.pack.js"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function(event) {
+    var codeBlocks = Array.prototype.slice.call(document.getElementsByTagName('pre'))
+    codeBlocks.forEach(function(block, index) {
+      hljs.highlightBlock(block);
+    });
+  });
+</script>
+
+
+
+  </body>
+</html>
+
