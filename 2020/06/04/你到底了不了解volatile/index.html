@@ -1,151 +1,99 @@
+
 <!DOCTYPE html>
 <html>
-  <!-- Html Head Tag-->
-  <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="">
-  <meta name="author" content="supiaol">
+<head>
+  <meta charset="utf-8">
+  
+  <title>你到底了不了解volatile? | 不忘长安</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="volatile​        JVM关键字 ,语义：保证有序性和可见性。在理解volatile之前先了解Java内存模型。 Java内存模型​        Java虚拟机规范试图定义一种Java内存模型来屏蔽掉各种硬件和操作系统的内存访问差异。通过定义主内存和本地内存来制定程序中各个变量的访问规则，也就是虚拟机中将变量存储到内存和从内存中读取变量这样的底层细节。此处的变量包括了实例字段、静态">
+<meta property="og:type" content="article">
+<meta property="og:title" content="你到底了不了解volatile?">
+<meta property="og:url" content="http://yoursite.com/2020/06/04/%E4%BD%A0%E5%88%B0%E5%BA%95%E4%BA%86%E4%B8%8D%E4%BA%86%E8%A7%A3volatile/index.html">
+<meta property="og:site_name" content="不忘长安">
+<meta property="og:description" content="volatile​        JVM关键字 ,语义：保证有序性和可见性。在理解volatile之前先了解Java内存模型。 Java内存模型​        Java虚拟机规范试图定义一种Java内存模型来屏蔽掉各种硬件和操作系统的内存访问差异。通过定义主内存和本地内存来制定程序中各个变量的访问规则，也就是虚拟机中将变量存储到内存和从内存中读取变量这样的底层细节。此处的变量包括了实例字段、静态">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-06-04T04:50:14.000Z">
+<meta property="article:modified_time" content="2020-06-04T04:51:43.587Z">
+<meta property="article:author" content="supiaol">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternative" href="/atom.xml" title="不忘长安" type="application/atom+xml">
   
   
-  <!-- Open Graph Data -->
-  <meta property="og:title" content="你到底了不了解volatile?"/>
-  <meta property="og:description" content="" />
-  <meta property="og:site_name" content="不忘长安"/>
-  <meta property="og:type" content="article" />
-  <meta property="og:image" content="http://yoursite.com"/>
+    <link rel="icon" href="/favicon.png">
   
-    <link rel="alternate" href="/atom.xml" title="不忘长安" type="application/atom+xml">
-  
-  
-    <link rel="icon" href="/images/favicon.ico">
-  
-
-  <!-- Site Title -->
-  <title>不忘长安</title>
-
-  <!-- Bootstrap CSS -->
-  
-<link rel="stylesheet" href="/css/bootstrap.min.css">
-
-  
-<link rel="stylesheet" href="/css/font-awesome.min.css">
-
-  <!-- Custom CSS -->
   
 <link rel="stylesheet" href="/css/style.css">
 
-
-  <!-- Google Analytics -->
+  <!--[if lt IE 9]><script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7/html5shiv.min.js"></script><![endif]-->
   
-
-  <!-- BaiDu Analytics -->
-  
-
-
-
 <meta name="generator" content="Hexo 4.2.1"></head>
-
-  <body>
-    <!-- Page Header -->
-
-
-<nav class="navbar-custom navbar-fixed-top">
-    <div class="container-fluid">
-        <!-- Collect the nav links, forms, and other content for toggling -->
-        <div class="collapse navbar-collapse site-menu">
-            <ul class="nav navbar-nav navbar-right">
-                
-                    <li>
-                        <a href="/">
-                            
-                                Home
-                            
-                        </a>
-                    </li>
-                
-                    <li>
-                        <a href="/archives">
-                            
-                                Archives
-                            
-                        </a>
-                    </li>
-                
-                    <li>
-                        <a href="/about">
-                            
-                                About
-                            
-                        </a>
-                    </li>
-                
-                    <li>
-                        <a href="mailto:<your email-address>">
-                            
-                                Email
-                            
-                        </a>
-                    </li>
-                
-                    <li>
-                        <a href="/%5Bobject%20Object%5D">
-                            
-                                <i class="icon fa fa-github fa-lg"></i>
-                            
-                        </a>
-                    </li>
-                
-            </ul>
-        </div>
+<body>
+<div id="container">
+  <div id="wrap">
+    <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">不忘长安</a>
+      </h1>
+      
     </div>
-</nav>
-
-<!-- Header -->
-<header class="site-header header-background intro-header" style="background-image: url(/img/default-banner.jpg)">
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-        <div class="page-title with-background-image">
-          <p class="title">你到底了不了解volatile?</p>
-          <p class="subtitle"></p>
-        </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//www.baidu.com/baidu" method="get" accept-charset="utf-8" class="search-form">
+          <input type="search" name="word" maxlength="20" class="search-form-input" placeholder="Search">
+          <input type="submit" value="" class="search-form-submit">
+          <input name=tn type=hidden value="bds">
+          <input name=cl type=hidden value="3">
+          <input name=ct type=hidden value="2097152">
+          <input type="hidden" name="si" value="yoursite.com">
+        </form>
       </div>
     </div>
   </div>
 </header>
-
-<article>
-  <div class="container typo">
-    <div class="row">
-      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-        <div class="post-info text-muted">
-          
-            <!-- Author -->
-            <span class="author info">By supiaol</span>
-          
-          <!-- Date -->
-          <span class="date-time info">On
-            <span class="date">2020-06-04T12:50:14+08:00</span>
-            <!--<span class="date">2020-06-04</span>
-            <span class="time">15:34:57</span> -->
-          </span>
-          
-        </div>
-        <!-- Tags -->
+    <div class="outer">
+      <section id="main"><article id="post-你到底了不了解volatile" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2020/06/04/%E4%BD%A0%E5%88%B0%E5%BA%95%E4%BA%86%E4%B8%8D%E4%BA%86%E8%A7%A3volatile/" class="article-date">
+  <time datetime="2020-06-04T04:50:14.000Z" itemprop="datePublished">2020-06-04</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
         
-          <div class="post-tags text-muted">
-            Tags: 
+  
+    <h1 class="article-title" itemprop="name">
+      你到底了不了解volatile?
+    </h1>
+  
 
-<a class="tag" href="/tags/Java/">#Java</a>
-
-
-          </div>
-        
-        <!-- Post Main Content -->
-        <div class="post-content">
-          <h1 id="volatile"><a href="#volatile" class="headerlink" title="volatile"></a>volatile</h1><p>​        JVM关键字 ,语义：保证有序性和可见性。在理解volatile之前先了解Java内存模型。</p>
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="volatile"><a href="#volatile" class="headerlink" title="volatile"></a>volatile</h1><p>​        JVM关键字 ,语义：保证有序性和可见性。在理解volatile之前先了解Java内存模型。</p>
 <h3 id="Java内存模型"><a href="#Java内存模型" class="headerlink" title="Java内存模型"></a>Java内存模型</h3><p>​        Java虚拟机规范试图定义一种Java内存模型来屏蔽掉各种硬件和操作系统的内存访问差异。通过定义主内存和本地内存来制定程序中各个变量的访问规则，也就是虚拟机中将变量存储到内存和从内存中读取变量这样的底层细节。此处的变量包括了实例字段、静态字段、和构成数组对象的元素，但不包括局部变量和方法参数，因为后者是线程私有的。Java内存模型没有限制执行引擎使用处理器的特定寄存器或缓存来和主存进行交互，也没有限制即时编译器进行调整嗲吗执行顺序这类优化措施(与volatile直接相关，下文祥讲)。</p>
 <p>​        Java内存模型规定了所有的变量都存储在主存中，每条线程有自己的工作内存，线程的工作内存中保存了该线程使用到的变量的主存副本拷贝，线程对变量所有的操作必须在本地内存中进行，不同的线程无法直接访问对方工作内存中的变量，必须经过主内存(该模型与Java内存区域的堆、栈、方法区等不是同一个层次的内存划分，基本上没啥关系)，需要注意的是volatile变量的访问同样需要拷贝到本地内存中，但是由于它特殊的操作顺序性规定使它看上去就像是在主内存读写访问一样。</p>
 <h3 id="内存间交互操作"><a href="#内存间交互操作" class="headerlink" title="内存间交互操作"></a>内存间交互操作</h3><p>​        Java内存模型定义了8种操作来完成主内存和本地内存间的交互细节，虚拟机实现时必须保证这8种操作是原子性的，不可再分的(long、double类型变量除外)。</p>
@@ -201,74 +149,201 @@
 <li><input disabled type="checkbox"> 传递性：如果操作A先行发生于操作B，操作B先行发生于操作C，那么可以得出操作A先行发生于操作C。</li>
 </ul>
 
-        </div>
-        <!-- Comments -->
-        
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-
-      </div>
+      
     </div>
+    <footer class="article-footer">
+      
+        <a data-url="http://yoursite.com/2020/06/04/%E4%BD%A0%E5%88%B0%E5%BA%95%E4%BA%86%E4%B8%8D%E4%BA%86%E8%A7%A3volatile/" data-id="ckb1wlo6p0003usr62jxv9ah2" class="article-share-link" data-share="baidu" data-title="你到底了不了解volatile?">Share</a>
+      
+
+      
+        <a href="http://yoursite.com/2020/06/04/%E4%BD%A0%E5%88%B0%E5%BA%95%E4%BA%86%E4%B8%8D%E4%BA%86%E8%A7%A3volatile/#ds-thread" class="article-comment-link">Comments</a>
+      
+
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/" rel="tag">Java</a></li></ul>
+
+    </footer>
   </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/06/04/Java%E7%BA%BF%E7%A8%8B%E5%AE%9E%E7%8E%B0%E4%B8%8Esynchronized%E9%94%81%E4%BC%98%E5%8C%96/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Java线程实现与synchronized锁优化
+        
+      </div>
+    </a>
+  
+  
+</nav>
+
+  
 </article>
 
 
-
+  <section id="comments">
+    <div id="ds-thread" class="ds-thread" data-thread-key="2020/06/04/你到底了不了解volatile/" data-title="你到底了不了解volatile?" data-url="http://yoursite.com/2020/06/04/%E4%BD%A0%E5%88%B0%E5%BA%95%E4%BA%86%E4%B8%8D%E4%BA%86%E8%A7%A3volatile/"></div>
+  </section>
+</section>
+      
+      <aside id="sidebar">
+  
     
-<!-- Footer -->
-<footer>
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-        <p class="copyright text-muted">
-        &copy; 2016 -  2020
-        <span class="with-love">
-            <i class="fa fa-heart"></i>
-        </span>
-        <span class="author">supiaol</span>
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
 
-        
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Java/" style="font-size: 20px;">Java</a> <a href="/tags/Redis/" style="font-size: 10px;">Redis</a>
+    </div>
+  </div>
 
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">June 2020</a><span class="archive-list-count">7</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
         
-        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-        <p class="visit-statistics">
-            <span id="busuanzi_container_site_pv">
-              本站总访问：<span id="busuanzi_value_site_pv"></span>次
-              &nbsp;&nbsp;&nbsp;&nbsp;
-            </span>
-        <p>
+          <li>
+            <a href="/2020/06/04/%E4%BD%A0%E6%9D%A5%E5%95%A6/">你来啦</a>
+          </li>
         
-      </div>
+          <li>
+            <a href="/2020/06/04/%E8%BF%99%E9%87%8C%E6%9C%89%E4%BD%A0%E5%B8%B8%E7%94%A8%E7%9A%84%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E5%90%97/">这里有你常用的分布式锁吗</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/04/%E6%88%91%E5%86%8D%E4%B9%9F%E4%B8%8D%E6%80%95%E9%9D%A2%E8%AF%95%E8%A2%AB%E9%97%AE%E9%9B%B6%E6%8B%B7%E8%B4%9D%E4%BA%86/">我再也不怕面试被问零拷贝了</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/04/Redis%E6%8C%81%E4%B9%85%E5%8C%96%E4%B9%9F%E5%B0%B1%E8%BF%99%E4%B9%88%E5%A4%9A%E9%9C%80%E8%A6%81%E6%8E%8C%E6%8F%A1%E7%9A%84/">Redis持久化也就这么多需要掌握的</a>
+          </li>
+        
+          <li>
+            <a href="/2020/06/04/%E4%B8%80%E8%A1%8C%E4%B8%80%E8%A1%8C%E7%9C%8BAQS%E6%BA%90%E7%A0%81/">一行一行看AQS源码</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Links</h3>
+    <div class="widget">
+      <ul>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+      
+    </div>
+    <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 supiaol<br>
+      Powered by <a href="//hexo.io/" target="_blank">Hexo</a>
+      .
+      Theme by <a href="https://github.com/xiangming/landscape-plus" target="_blank">Landscape-plus</a>
     </div>
   </div>
 </footer>
+  </div>
+  <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+  <!-- totop start -->
+<div id="totop">
+<a title="totop"><img src="/img/scrollup.png"/></a>
+</div>
+
+<!-- totop end -->
+
+<!-- 多说公共js代码 start -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"supiaol"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0]
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+<!-- 多说公共js代码 end -->
 
 
-    <!-- After Footer Scripts -->
+<!-- 百度分享 start -->
 
-<script src="/js/highlight.pack.js"></script>
-
+<div id="article-share-box" class="article-share-box">
+  <div id="bdshare" class="bdsharebuttonbox article-share-links">
+    <a class="article-share-weibo" data-cmd="tsina" title="分享到新浪微博"></a>
+    <a class="article-share-weixin" data-cmd="weixin" title="分享到微信"></a>
+    <a class="article-share-qq" data-cmd="sqq" title="分享到QQ"></a>
+    <a class="article-share-renren" data-cmd="renren" title="分享到人人网"></a>
+    <a class="article-share-more" data-cmd="more" title="更多"></a>
+  </div>
+</div>
 <script>
-  document.addEventListener("DOMContentLoaded", function(event) {
-    var codeBlocks = Array.prototype.slice.call(document.getElementsByTagName('pre'))
-    codeBlocks.forEach(function(block, index) {
-      hljs.highlightBlock(block);
-    });
-  });
+  function SetShareData(cmd, config) {
+    if (shareDataTitle && shareDataUrl) {
+      config.bdText = shareDataTitle;
+      config.bdUrl = shareDataUrl;
+    }
+    return config;
+  }
+  window._bd_share_config={
+    "common":{onBeforeClick: SetShareData},
+    "share":{"bdCustomStyle":"/css/bdshare.css"}
+  };
+  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
 </script>
 
+<!-- 百度分享 end -->
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 
 
-  </body>
+
+
+
+<script src="/js/script.js"></script>
+
+
+</div>
+</body>
 </html>
-
