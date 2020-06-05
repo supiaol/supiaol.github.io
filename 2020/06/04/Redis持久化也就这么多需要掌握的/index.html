@@ -1,128 +1,138 @@
-
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8">
-  
-  <title>Redis持久化也就这么多需要掌握的 | 不忘长安</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <!-- Html Head Tag-->
+  <head>
+  <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <!-- Set render engine for 360 browser -->
-  <meta name="renderer" content="webkit">
-  <!-- No Baidu Siteapp-->
-  <meta http-equiv="Cache-Control" content="no-siteapp"/>
-  <meta name="description" content="Redis是内存数据库，数据的读取与操作都是在内存中进行的，这种方式在提供高性能服务的同时也面临巨大的风险，如服务器宕机、异常重启等诸如不确定因素，重启之后内存中的数据都会被清空，这显然是灾难级的事故。针对这种非常可能出现的问题，Redis必须考虑支持数据持久化，为此，Redis提供了两种持久化方案：RDB持久化和AOF持久化。持久化的出现也是Redis实现高可用的基础。 RDB持久化​">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Redis持久化也就这么多需要掌握的">
-<meta property="og:url" content="http://yoursite.com/2020/06/04/Redis%E6%8C%81%E4%B9%85%E5%8C%96%E4%B9%9F%E5%B0%B1%E8%BF%99%E4%B9%88%E5%A4%9A%E9%9C%80%E8%A6%81%E6%8E%8C%E6%8F%A1%E7%9A%84/index.html">
-<meta property="og:site_name" content="不忘长安">
-<meta property="og:description" content="Redis是内存数据库，数据的读取与操作都是在内存中进行的，这种方式在提供高性能服务的同时也面临巨大的风险，如服务器宕机、异常重启等诸如不确定因素，重启之后内存中的数据都会被清空，这显然是灾难级的事故。针对这种非常可能出现的问题，Redis必须考虑支持数据持久化，为此，Redis提供了两种持久化方案：RDB持久化和AOF持久化。持久化的出现也是Redis实现高可用的基础。 RDB持久化​">
-<meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://yoursite.com/2020/06/04/Redis%E6%8C%81%E4%B9%85%E5%8C%96%E4%B9%9F%E5%B0%B1%E8%BF%99%E4%B9%88%E5%A4%9A%E9%9C%80%E8%A6%81%E6%8E%8C%E6%8F%A1%E7%9A%84/image-20200603144220279.png">
-<meta property="og:image" content="http://yoursite.com/2020/06/04/Redis%E6%8C%81%E4%B9%85%E5%8C%96%E4%B9%9F%E5%B0%B1%E8%BF%99%E4%B9%88%E5%A4%9A%E9%9C%80%E8%A6%81%E6%8E%8C%E6%8F%A1%E7%9A%84/image-20200603151239186.png">
-<meta property="article:published_time" content="2020-06-04T05:50:27.000Z">
-<meta property="article:modified_time" content="2020-06-04T06:38:53.090Z">
-<meta property="article:author" content="supiaol">
-<meta property="article:tag" content="Redis">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://yoursite.com/2020/06/04/Redis%E6%8C%81%E4%B9%85%E5%8C%96%E4%B9%9F%E5%B0%B1%E8%BF%99%E4%B9%88%E5%A4%9A%E9%9C%80%E8%A6%81%E6%8E%8C%E6%8F%A1%E7%9A%84/image-20200603144220279.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="supiaol">
   
   
-    <link rel="icon" href="/img/logo.jpg">
-    <meta name="mobile-web-app-capable" content="yes">
-    <!-- Add to homescreen for Chrome on Android -->    
-    <link rel="icon" sizes="192x192" href="/img/logo.jpg">
-    <!-- Add to homescreen for Safari on iOS -->
-    <link rel="apple-touch-icon-precomposed" href="/img/logo.jpg">    
-    <!-- Tile icon for Win8 (144x144 + tile color) -->
-    <meta name="msapplication-TileImage" content="/img/logo.jpg">
-    <meta name="msapplication-TileColor" content="#0e90d2">
+  <!-- Open Graph Data -->
+  <meta property="og:title" content="Redis持久化也就这么多需要掌握的"/>
+  <meta property="og:description" content="" />
+  <meta property="og:site_name" content="不忘长安"/>
+  <meta property="og:type" content="article" />
+  <meta property="og:image" content="http://yoursite.com"/>
   
+    <link rel="alternate" href="/atom.xml" title="不忘长安" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/images/favicon.ico">
+  
+
+  <!-- Site Title -->
+  <title>不忘长安</title>
+
+  <!-- Bootstrap CSS -->
+  
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+
+  
+<link rel="stylesheet" href="/css/font-awesome.min.css">
+
+  <!-- Custom CSS -->
   
 <link rel="stylesheet" href="/css/style.css">
 
-  <!--[if lt IE 9]><script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7/html5shiv.min.js"></script><![endif]-->
+
+  <!-- Google Analytics -->
   
+
+  <!-- BaiDu Analytics -->
   
-<script type="text/javascript">
-var _hmt = _hmt || [];
-(function() {
-  var hm = document.createElement("script");
-  hm.src = "//hm.baidu.com/hm.js?10f2720e6f47d1b4a5ebc811df8dc361";
-  var s = document.getElementsByTagName("script")[0]; 
-  s.parentNode.insertBefore(hm, s);
-})();
-</script>
+<script>var _hmt = _hmt || []</script>
+<script async src="//hm.baidu.com/hm.js?true"></script>
+
+
+
 
 <meta name="generator" content="Hexo 4.2.1"></head>
-<body>
-<div id="container">
-  <div id="wrap">
-    <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">不忘长安</a>
-      </h1>
-      
+
+  <body>
+    <!-- Page Header -->
+
+
+<nav class="navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse site-menu">
+            <ul class="nav navbar-nav navbar-right">
+                
+                    <li>
+                        <a href="/">
+                            
+                                Home
+                            
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="/archives">
+                            
+                                Archives
+                            
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="https://github.com/supiaol" target="_blank" rel="noopener">
+                            
+                                <i class="icon fa fa-github fa-lg"></i>
+                            
+                        </a>
+                    </li>
+                
+            </ul>
+        </div>
     </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"></a>
-        
-          <a class="main-nav-link" href="/">首页</a>
-        
-          <a class="main-nav-link" href="/archives">文章</a>
-        
-          <a class="main-nav-link" href="/about">关于</a>
-        
-      </nav>
-      <!--
-      <nav id="sub-nav">
-        
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//www.baidu.com/baidu" method="get" accept-charset="utf-8" class="search-form">
-          <input type="search" name="word" maxlength="20" class="search-form-input" placeholder="Search">
-          <input type="submit" value="" class="search-form-submit">
-          <input name=tn type=hidden value="bds">
-          <input name=cl type=hidden value="3">
-          <input name=ct type=hidden value="2097152">
-          <input type="hidden" name="si" value="yoursite.com">
-        </form>
+</nav>
+
+<!-- Header -->
+<header class="site-header header-background intro-header" style="background-image: url(/img/banner.jpg)">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="page-title with-background-image">
+          <p class="title">Redis持久化也就这么多需要掌握的</p>
+          <p class="subtitle"></p>
+        </div>
       </div>
-      -->
     </div>
   </div>
 </header>
-    <div class="outer">
-      <section id="main"><article id="post-Redis持久化也就这么多需要掌握的" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2020/06/04/Redis%E6%8C%81%E4%B9%85%E5%8C%96%E4%B9%9F%E5%B0%B1%E8%BF%99%E4%B9%88%E5%A4%9A%E9%9C%80%E8%A6%81%E6%8E%8C%E6%8F%A1%E7%9A%84/" class="article-date">
-  <time datetime="2020-06-04T05:50:27.000Z" itemprop="datePublished">2020-06-04</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="article-title" itemprop="name">
-      Redis持久化也就这么多需要掌握的
-    </h1>
-  
 
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <!-- Table of Contents -->
+<article>
+  <div class="container typo">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <div class="post-info text-muted">
+          
+            <!-- Author -->
+            <span class="author info">By supiaol</span>
+          
+          <!-- Date -->
+          <span class="date-time info">On
+            <!--<span class="date">2020-06-04T13:50:27+08:00</span> -->
+            <span class="date">2020-06-04</span>
+            <!--<span class="time">14:53:18</span> -->
+          </span>
+          
+        </div>
+        <!-- Tags -->
         
-        <p>Redis是内存数据库，数据的读取与操作都是在内存中进行的，这种方式在提供高性能服务的同时也面临巨大的风险，如服务器宕机、异常重启等诸如不确定因素，重启之后内存中的数据都会被清空，这显然是灾难级的事故。针对这种非常可能出现的问题，Redis必须考虑支持数据持久化，为此，Redis提供了两种持久化方案：<strong>RDB持久化</strong>和<strong>AOF持久化</strong>。持久化的出现也是Redis实现高可用的基础。</p>
+          <div class="post-tags text-muted">
+            Tags: 
+
+<a class="tag" href="/tags/Redis/">#Redis</a>
+
+
+          </div>
+        
+        <!-- Post Main Content -->
+        <div class="post-content">
+          <p>Redis是内存数据库，数据的读取与操作都是在内存中进行的，这种方式在提供高性能服务的同时也面临巨大的风险，如服务器宕机、异常重启等诸如不确定因素，重启之后内存中的数据都会被清空，这显然是灾难级的事故。针对这种非常可能出现的问题，Redis必须考虑支持数据持久化，为此，Redis提供了两种持久化方案：<strong>RDB持久化</strong>和<strong>AOF持久化</strong>。持久化的出现也是Redis实现高可用的基础。</p>
 <h3 id="RDB持久化"><a href="#RDB持久化" class="headerlink" title="RDB持久化"></a>RDB持久化</h3><p>​        RDB可以理解为某一时刻数据库的快照样本。RDB持久化会将数据库某一时刻的状态全部保存在一个RDB文件中，这个文件是一个经过压缩的二进制文件，通过该文件可以还原生成RDB文件时的数据库状态。因为RDB文件是保存在硬盘里的，所以即使Redis服务器进程退出，也能通过在重启的时候载入RDB文件来还原。RDB持久化有两种执行方式：<strong>手动执行和根据配置定期执行</strong>。Redis实现RDB持久化的命令有<strong>SAVE</strong>和<strong>BGSAVE</strong>两种。</p>
 <ul>
 <li>SAVE命令会阻塞Redis服务器进程，直到RDB文件创建成功为止，在<strong>服务器进程阻塞期间不能接受客户端任何命令请求</strong>。</li>
@@ -212,217 +222,74 @@ var _hmt = _hmt || [];
 </li>
 </ol>
 
-      
-      
-  <div class="article-statement">
-    <hr>  
-    1.如果本文帮到了您，不妨点一下右下角的 <a>分享到</a> 按钮。<br>
-    2.除非注明，本博文章均为原创，转载请以链接形式标明本文地址。<br>
-    3.本博文章只代表博主当时的观点或结论，与博主公司没有任何关系。<br>
-  </div>
-
-    </div>
-    
-    <footer class="article-footer">
-      
-        <a data-url="http://yoursite.com/2020/06/04/Redis%E6%8C%81%E4%B9%85%E5%8C%96%E4%B9%9F%E5%B0%B1%E8%BF%99%E4%B9%88%E5%A4%9A%E9%9C%80%E8%A6%81%E6%8E%8C%E6%8F%A1%E7%9A%84/" data-id="ckb1uefa60001vkr62kxge0ez" class="article-share-link" data-share="baidu" data-title="Redis持久化也就这么多需要掌握的">Share</a>
-      
-
-      
-        <a href="http://yoursite.com/2020/06/04/Redis%E6%8C%81%E4%B9%85%E5%8C%96%E4%B9%9F%E5%B0%B1%E8%BF%99%E4%B9%88%E5%A4%9A%E9%9C%80%E8%A6%81%E6%8E%8C%E6%8F%A1%E7%9A%84/#ds-thread" class="article-comment-link">Comments</a>
-      
-
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Redis/" rel="tag">Redis</a></li></ul>
-
-    </footer>
-  </div>
-  
-    
-<nav id="article-nav">
-  
-    <a href="/2020/06/04/%E6%88%91%E5%86%8D%E4%B9%9F%E4%B8%8D%E6%80%95%E9%9D%A2%E8%AF%95%E8%A2%AB%E9%97%AE%E9%9B%B6%E6%8B%B7%E8%B4%9D%E4%BA%86/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
+        </div>
+        <!-- Comments -->
         
-          我再也不怕面试被问零拷贝了
-        
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+
       </div>
-    </a>
-  
-  
-    <a href="/2020/06/04/%E4%B8%80%E8%A1%8C%E4%B8%80%E8%A1%8C%E7%9C%8BAQS%E6%BA%90%E7%A0%81/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">一行一行看AQS源码</div>
-    </a>
-  
-</nav>
-
-  
+    </div>
+  </div>
 </article>
 
 
-  <section id="comments">
-    <div id="ds-thread" class="ds-thread" data-thread-key="2020/06/04/Redis持久化也就这么多需要掌握的/" data-title="Redis持久化也就这么多需要掌握的" data-url="http://yoursite.com/2020/06/04/Redis%E6%8C%81%E4%B9%85%E5%8C%96%E4%B9%9F%E5%B0%B1%E8%BF%99%E4%B9%88%E5%A4%9A%E9%9C%80%E8%A6%81%E6%8E%8C%E6%8F%A1%E7%9A%84/"></div>
-  </section>
-</section>
-      
-      <aside id="sidebar">
-  
-    <div class="widget-wrap">
-  <h3 class="widget-title">Follow Me</h3>
-  <div class="widget">
-    <ul>
-      
-      
-    </ul>
-  </div>
-</div>
-  
-    <div class="widget-wrap">
-  <h3 class="widget-title">Recommend Posts</h3>
-  <div class="widget">
-    <ul>
-      
-      
-    </ul>
-  </div>
-</div>
-  
-    
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
-    <div class="widget tagcloud">
-      <a href="/tags/Java/" style="font-size: 20px;">Java</a> <a href="/tags/Redis/" style="font-size: 10px;">Redis</a>
-    </div>
-  </div>
 
-  
     
-  <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">2020年 06月</a><span class="archive-list-count">7</span></li></ul>
-    </div>
-  </div>
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+        <p class="copyright text-muted">
+        &copy; 2016 -  2020
+        <span class="with-love">
+            <i class="fa fa-heart"></i>
+        </span>
+        <span class="author">supiaol</span>
 
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Recent Comments</h3>
-    <div class="widget">
-      <!-- 多说最新评论 start -->
-      <div class="ds-recent-comments" data-num-items="5" data-show-avatars="0" data-show-time="1" data-show-title="1" data-show-admin="1" data-excerpt-length="70"></div>
-      <!-- 多说最新评论 end -->
-      <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
-      <script type="text/javascript">
-        var duoshuoQuery = {short_name:"shijiajie"};
-        (function() {
-          var ds = document.createElement('script');
-          ds.type = 'text/javascript';ds.async = true;
-          ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-          ds.charset = 'UTF-8';
-          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
-        })();
-      </script>
-      <!-- 多说公共JS代码 end -->
-    </div>
-  </div>
+        
 
-  
-</aside>
-      
-    </div>
-    <footer id="footer">
-  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
-  </script>
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
-      Copyright &copy; 2012 - 2020 <a href="/" target="_blank">supiaol</a>.
-      &nbsp;
-      <span id="busuanzi_container_site_pv">
-        总访问量 <a href="http://service.ibruce.info/" target="_blank"><span id="busuanzi_value_site_pv"></span></a> 次
-      </span>
-      <span id="busuanzi_container_site_uv">
-        <a href="http://service.ibruce.info/" target="_blank"><span id="busuanzi_value_site_uv"></span></a> 人.
-      </span>
-      
+        
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+        <p class="visit-statistics">
+            <span id="busuanzi_container_site_pv">
+              本站总访问：<span id="busuanzi_value_site_pv"></span>次
+              &nbsp;&nbsp;&nbsp;&nbsp;
+            </span>
+        <p>
+        
+      </div>
     </div>
   </div>
 </footer>
 
-  </div>
-  <nav id="mobile-nav">
-  
-    <a href="/" class="mobile-nav-link">首页</a>
-  
-    <a href="/archives" class="mobile-nav-link">文章</a>
-  
-    <a href="/about" class="mobile-nav-link">关于</a>
-  
-</nav>
-  <!-- totop start -->
-<div id="totop">
-<a title="totop"><img src="/img/scrollup.png"/></a>
-</div>
 
-<!-- totop end -->
+    <!-- After Footer Scripts -->
 
-<!-- 多说公共js代码 start -->
-<script type="text/javascript">
-var duoshuoQuery = {short_name:"supiaol"};
-  (function() {
-    var ds = document.createElement('script');
-    ds.type = 'text/javascript';ds.async = true;
-    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-    ds.charset = 'UTF-8';
-    (document.getElementsByTagName('head')[0]
-     || document.getElementsByTagName('body')[0]).appendChild(ds);
-  })();
-  </script>
-<!-- 多说公共js代码 end -->
+<script src="/js/highlight.pack.js"></script>
 
-
-<!-- 百度分享 start -->
-
-<div id="article-share-box" class="article-share-box">
-  <div id="bdshare" class="bdsharebuttonbox article-share-links">
-    <a class="article-share-weibo" data-cmd="tsina" title="分享到新浪微博"></a>
-    <a class="article-share-weixin" data-cmd="weixin" title="分享到微信"></a>
-    <a class="article-share-qq" data-cmd="sqq" title="分享到QQ"></a>
-    <a class="article-share-renren" data-cmd="renren" title="分享到人人网"></a>
-    <a class="article-share-more" data-cmd="more" title="更多"></a>
-  </div>
-</div>
 <script>
-  function SetShareData(cmd, config) {
-    if (shareDataTitle && shareDataUrl) {
-      config.bdText = shareDataTitle;
-      config.bdUrl = shareDataUrl;
-    }
-    return config;
-  }
-  window._bd_share_config={
-    "common":{onBeforeClick: SetShareData},
-    "share":{"bdCustomStyle":"/css/bdshare.css"}
-  };
-  with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='//bdimg.share.baidu.com/static/api/js/share.js?cdnversion='+~(-new Date()/36e5)];
+  document.addEventListener("DOMContentLoaded", function(event) {
+    var codeBlocks = Array.prototype.slice.call(document.getElementsByTagName('pre'))
+    codeBlocks.forEach(function(block, index) {
+      hljs.highlightBlock(block);
+    });
+  });
 </script>
 
-<!-- 百度分享 end -->
-
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 
 
-
-
-
-<script src="/js/script.js"></script>
-
-
-</div>
-</body>
+  </body>
 </html>
+
